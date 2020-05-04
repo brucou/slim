@@ -1,0 +1,47 @@
+{
+  "name": "yed2kingly",
+  "version": "0.1.0",
+  "author": "brucou",
+  "description": "Supports the conversion of graphs drawn with the yed editor into Kingly state machines",
+  "devDependencies": {
+    "assert-diff": "^3.0.0",
+    "chai": "^4.2.0",
+    "mocha": "^7.1.1"
+  },
+  "dependencies": {
+    "funfix": "^7.0.1",
+    "ejs": "^3.1.2",
+    "commander": "^5.0.0",
+    "fs": "latest",
+    "prettier": "^2.0.4",
+    "fast-xml-parser": "^3.16.0",
+    "fp-rosetree": "0.6.2",
+    "kingly": "^0.25.0",
+    "ramda": "^0.27.0"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "printWidth": 120,
+    "semi": true,
+    "singleQuote": true
+  },
+  "sideEffects": false,
+  "files": [
+    "index.js",
+    "conversion.js",
+    "helpers.js",
+    "properties.js"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "state-machine",
+    "state machine",
+    "finite state machine",
+    "state-transducer",
+    "state transducer",
+    "automata",
+    "automaton",
+    "automata"
+  ]
+}
