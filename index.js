@@ -87,23 +87,22 @@ function compileYedFile(_file) {
         const compiledContents = [
           templateIntro,
           `function createStateMachine(fsmDefForCompile, settings) {`,
-          `const actions = fsmDefForCompile.actionFactories;`,
-          `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}`,
-          `const guards = fsmDefForCompile.guards;`,
-          `const updateState = fsmDefForCompile.updateState;`,
-          `const initialControlState = INIT_STATE`,
-          `const initialExtendedState = fsmDefForCompile.initialExtendedState;`,
+          `var actions = fsmDefForCompile.actionFactories;`,
+          `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
+          `var guards = fsmDefForCompile.guards;`,
+          `var updateState = fsmDefForCompile.updateState;`,
+          `var initialControlState = INIT_STATE`,
+          `var initialExtendedState = fsmDefForCompile.initialExtendedState;`,
           ``,
           `// initialize`,
-          `let stateAncestors = ${JSON.stringify(stateAncestors)};`,
-          `let isStateWithEventlessTransition = ${JSON.stringify(isStateWithEventlessTransition)}`,
-          `let isCompoundControlState = ${JSON.stringify(isCompoundControlState)}`,
-          `let cs = initialControlState;`,
-          `let es = initialExtendedState;`,
-          `let hs = ${JSON.stringify(initialHistoryState)}`,
-          `console.log('creating the machine', isStateWithEventlessTransition)`,
+          `var stateAncestors = ${JSON.stringify(stateAncestors)};`,
+          `var isStateWithEventlessTransition = ${JSON.stringify(isStateWithEventlessTransition)}`,
+          `var isCompoundControlState = ${JSON.stringify(isCompoundControlState)}`,
+          `var cs = initialControlState;`,
+          `var es = initialExtendedState;`,
+          `var hs = ${JSON.stringify(initialHistoryState)};`,
           ``,
-          `const eventHandlers = {`,
+          `var eventHandlers = {`,
           Object.keys(transitionsPerOrigin).reduce((str, from) => {
             return str + [
               // From
@@ -148,11 +147,11 @@ function compileYedFile(_file) {
       })
         .flatMap(compiledContents => Try.of(() => {
           // Write the esm output file
-          // const esmContents = [compiledContents, esmExports].join("\n\n");
-          //   const prettyEsmFileContents = prettier.format(esmContents , { semi: true, parser: 'babel', printWidth: 120 });
-          //   fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents );
+          const esmContents = [compiledContents, esmExports].join("\n\n");
+            const prettyEsmFileContents = prettier.format(esmContents , { semi: true, parser: 'babel', printWidth: 120 });
+            fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents );
           // Write the cjs output file
-          const cjsContents = [compiledContents, cjsExports].join("\n\n");
+          const cjsContents = [compiledContents, cjsExports,""].join("\n\n");
             const prettyCjsFileContents = prettier.format(cjsContents, { semi: true, parser: 'babel', printWidth: 120 });
             fs.writeFileSync(`${file}.fsm.compiled.cjs`, prettyCjsFileContents );
           },

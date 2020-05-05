@@ -23,7 +23,9 @@ describe('End-to-end graphml to kingly', function() {
       execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
+      console.error(err);
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
+      process.exit(1);
     }
 
     // require the js file
