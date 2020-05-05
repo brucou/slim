@@ -47,7 +47,7 @@ const mainLoop = `
 function process(event){
   const eventLabel = Object.keys(event)[0];
   const eventData = event[eventLabel];
-  console.log('event', event, cs);
+  console.log('event & state', event, cs);
   
   const controlStateHandlingEvent = [cs].concat(stateAncestors[cs]||[]).find(function(controlState){
     return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
@@ -65,17 +65,22 @@ function process(event){
     // cs, es, hs have been updated in place by the handler
     // Run any automatic transition too
     const outputs = computed.outputs;
+    // console.log('new cs', cs, isCompoundControlState[cs], isStateWithEventlessTransition[cs]);
     let nextEvent = isCompoundControlState[cs]
       ? INIT_EVENT
       : isStateWithEventlessTransition[cs]
         ? ''
         : null;
     let nextOutputs  = [];
-    if (nextEvent) nextOutputs = process({[nextEvent]: eventData});
+    if (nextEvent !== null) {
+    nextOutputs = process({[nextEvent]: eventData});
+    console.log('Detected automatic event', nextEvent, nextOutputs);
+    }
     
     return outputs.concat(nextOutputs)
   }
-  else return null
+  // Event is not accepted by the machine
+  else {console.log('Event is not accepted by the machine'); return null}
 }
 
 // Start the machine

@@ -23,44 +23,6 @@ program
   .action(compileYedFile);
 program.parse(process.argv);
 
-var template = `
-function createStateMachine(fsmDefForCompile, settings) {
-const actions = fsmDefForCompile.actions;
-const guards = fsmDefForCompile.guards;
-const updateState = fsmDefForCompile.updateState;
-const initialControlState = fsmDefForCompile.initialControlState;
-const initialExtendedState = fsmDefForCompile.initialExtendedState;
-
-// initialize
-const eventHandlers = {};
-let cs = initialControlState;
-let es = initialExtendedState;
-let hs = <%- initialHistoryState %>;
-
-const eventHandlers = {
-  <% transitions.forEach((from, event, to, action, guards) => {  %>
-    <%- from%>: { 
-       <%- event? event: 'auto' %>:  <% if (!guards) {%>  actions[actionName]
-       <% } else { %>
-         function (es, ed, stg){
-           let computed = null;
-           guards.some({predicate, to, action} => {
-             if (predicate(es, ed, stg)) { computed = action(es, ed, stg), true } else return false
-           })
-           
-           return computed
-         }
-       <% } %>
-}
-  <% })   %>
-
-  return function process(event){
-    // loop
-  }
-}
-`.trim();
-
-
 // Conversion function
 // DOC: We export two files: one cjs for node.js and js for browser esm consumption
 // NTH: May could be the export through an option (to generate module.exports = ...)
@@ -114,7 +76,7 @@ function compileYedFile(_file) {
 
           return isStateWithEventlessTransition;
         }, {});
-        // TODO
+
       const isCompoundControlState = historyMaps.stateList.reduce((acc, state) => {
         if (stateAncestors && stateAncestors[state]) {
           stateAncestors[state].forEach(stateAncestor => acc[stateAncestor] = true)
@@ -126,7 +88,7 @@ function compileYedFile(_file) {
           templateIntro,
           `function createStateMachine(fsmDefForCompile, settings) {`,
           `const actions = fsmDefForCompile.actionFactories;`,
-          `actions["ACTION_IDENTITY"] = function(){return {updates:{}, outputs:[]}}`,
+          `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}`,
           `const guards = fsmDefForCompile.guards;`,
           `const updateState = fsmDefForCompile.updateState;`,
           `const initialControlState = INIT_STATE`,
@@ -139,6 +101,7 @@ function compileYedFile(_file) {
           `let cs = initialControlState;`,
           `let es = initialExtendedState;`,
           `let hs = ${JSON.stringify(initialHistoryState)}`,
+          `console.log('creating the machine', isStateWithEventlessTransition)`,
           ``,
           `const eventHandlers = {`,
           Object.keys(transitionsPerOrigin).reduce((str, from) => {
@@ -185,9 +148,9 @@ function compileYedFile(_file) {
       })
         .flatMap(compiledContents => Try.of(() => {
           // Write the esm output file
-          const esmContents = [compiledContents, esmExports].join("\n\n");
-            const prettyEsmFileContents = prettier.format(esmContents , { semi: true, parser: 'babel', printWidth: 120 });
-            fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents );
+          // const esmContents = [compiledContents, esmExports].join("\n\n");
+          //   const prettyEsmFileContents = prettier.format(esmContents , { semi: true, parser: 'babel', printWidth: 120 });
+          //   fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents );
           // Write the cjs output file
           const cjsContents = [compiledContents, cjsExports].join("\n\n");
             const prettyCjsFileContents = prettier.format(cjsContents, { semi: true, parser: 'babel', printWidth: 120 });
