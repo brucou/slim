@@ -1,8 +1,8 @@
 {
-  "name": "yed2kingly",
+  "name": "slim",
   "version": "0.1.0",
   "author": "brucou",
-  "description": "Supports the conversion of graphs drawn with the yed editor into Kingly state machines",
+  "description": "Compile a Kingly state machine drawn in the yed professional graph editor down to JavaScript",
   "devDependencies": {
     "assert-diff": "^3.0.0",
     "chai": "^4.2.0",

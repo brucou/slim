@@ -171,4 +171,5 @@ function compileYedFile(_file) {
 
 
 // TODO: optimize later
-// remove historyMaps if no use of history
+// cf. TODO.md
+// could also be good to CLEAN some code and remove craft coming from copy-pasting yed2kingly

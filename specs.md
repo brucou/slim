@@ -3,7 +3,7 @@
 ## How to use
 - should be a CLI which receives a yed file and returns a JS file, like yed2Kingly (yed2js would be a good name)
 - the js file exports a curried function which misses action and guards, and settings to return the machine
-- in  first version the compile code need to be optimal (whether size-wise or performnance-wise)
+- in  first version the compile code need not be optimal (whether size-wise or performnance-wise)
 - could be used maybe with a macro which ecompile the machine automatiquement for prod.
 - that could be done with a label yed.filename: const fsm = createStateMachine({action, guards}, settings)
 
