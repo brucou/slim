@@ -1,5 +1,5 @@
 # Motivation
-The `slim` package aims at supporting the creation of state machines with the [Kingly state machine library](https://brucou.github.io/documentation/). The Kingly state machine library may hover around a bundle size of 10-15KB. While Kingly is tree-shakeable and in practice the size after tree-shaking is around 5KB, the `slim` compiler allows developers to reduce the footprint of their state machines. This may be worthy if developers are using only a few small machines. We expect that, as the machine grows in complexity (number of control states, and hierarchy depth), the gain in bundle size obtained through the compiler is naturally reduced. We however estimate the effort worthwhile, as developers would likely have to write really large machines to come down to the same size than the library (which includes debugging, tracing, and error management).
+The `lesser` package aims at supporting the creation of state machines with the [Kingly state machine library](https://brucou.github.io/documentation/). The Kingly state machine library may hover around a bundle size of 10-15KB. While Kingly is tree-shakeable and in practice the size after tree-shaking is around 5KB, the `lesser` compiler allows developers to reduce the footprint of their state machines. This may be worthy if developers are using only a few small machines. We expect that, as the machine grows in complexity (number of control states, and hierarchy depth), the gain in bundle size obtained through the compiler is naturally reduced. We however estimate the effort worthwhile, as developers would likely have to write really large machines to come down to the same size than the library (which includes debugging, tracing, and error management).
 
 With the [yed graph editor](https://www.yworks.com/products/yed-live), [devtool](https://github.com/brucou/yed2Kingly) and the present compiler, we believe the minimal set of pieces is in place for developing and maintaining comfortably large Kingly state machines.
 
@@ -7,11 +7,11 @@ With the [yed graph editor](https://www.yworks.com/products/yed-live), [devtool]
 In a typical process, I start designing a machine from the specifications by drawing it in the yEd editor. When I am done or ready to test the results of my design, I save the file. yEd by default saves its files in a `.graphml` format. I save the graphml file in the same directory in which I want to use the created state machine. From there, a previously launched watcher runs the `yEd2Kingly` node script on the newly saved file and generates a JavaScript file which exports the events, state hierarchy and transitions contained in the graph -- you can of course also run the script manually instead of using a watcher. The provided exports can then be used as parameters to create a Kingly state machine.
 
 # Install
-`npm install slim`
+`npm install lesser`
 
 # Usage
 ```bash
-slim file.graphml
+lesser file.graphml
 ```
 
 Running the converter produces two files, targeted at consumption in a browser and node.js environment:
@@ -67,7 +67,7 @@ Some definitions:
   - A history pseudo-state is a node whose label is H (shallow history) or H* (deep history)
   - A compound node is a node which is created in the yEd interface by using the group functionality (*Grouping > Group* or *Ctrl-Alt-G* in version 3.19).
 
-- `slim` rules:
+- `lesser` rules:
   - The compiler converts the `.graphml` file using the same algorithm than `yed2Kingly`. As such the same conversion rules that apply: the machine encoded in the `.graphml` file must correspond to a valid Kingly machine.
   
 # Examples
@@ -84,3 +84,5 @@ mcocha *specs*
 
 # Final note
 After using and working with state machine for the past four years, I believe I am reaching a satisfying API and process. The idea is really to avoid unnecessary complexity. I am however interested in hearing your comment, and suggestions together with use cases that you believe are not satisfactorily addressed -> post an issue in the project directory.
+
+I am trying to get the `slim` package name instead of `lesser`. Let's see how that goes.
