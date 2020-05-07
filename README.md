@@ -20,6 +20,8 @@ In a typical process, I start designing a machine from the specifications by dra
 # Usage
 ```bash
 node ${slim filepath}/index.js file.graphml
+#or
+slim file.graphml
 ```
 
 Running the converter produces two files, targeted at consumption in a browser and node.js environment:

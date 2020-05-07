@@ -3,6 +3,10 @@
   "version": "0.3.0",
   "author": "brucou",
   "description": "Compile a Kingly state machine drawn in the yed professional graph editor down to JavaScript",
+  "bin": {
+    "@brucou/slim": "sli",
+    "slim": "sli"
+  },
   "devDependencies": {
     "assert-diff": "^3.0.0",
     "chai": "^4.2.0",
