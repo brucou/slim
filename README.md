@@ -1,6 +1,8 @@
 # Motivation
 The `slim` package aims at supporting the creation of state machines with the [Kingly state machine library](https://brucou.github.io/documentation/). The Kingly state machine library may hover around a bundle size of 10-15KB. While Kingly is tree-shakeable and in practice the size after tree-shaking is around 5KB, the `slim` compiler allows developers to reduce the footprint of their state machines. This may be worthy if developers are using only a few small machines. We expect that, as the machine grows in complexity (number of control states, and hierarchy depth), the gain in bundle size obtained through the compiler is naturally reduced. We however estimate the effort worthwhile, as developers would likely have to write really large machines to come down to the same size than the library (which includes debugging, tracing, and error management).
 
+
+
 With the [yed graph editor](https://www.yworks.com/products/yed-live), [devtool](https://github.com/brucou/yed2Kingly) and the present compiler, we believe the minimal set of pieces is in place for developing and maintaining comfortably large Kingly state machines.
 
 # Guiding principles
