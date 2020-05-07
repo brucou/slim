@@ -18,7 +18,7 @@ In a typical process, I start designing a machine from the specifications by dra
 
 # Usage
 ```bash
-mode ${slim filepath}/index.js file.graphml
+node ${slim filepath}/index.js file.graphml
 ```
 
 Running the converter produces two files, targeted at consumption in a browser and node.js environment:
