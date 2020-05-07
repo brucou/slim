@@ -1,7 +1,6 @@
 var INIT_STATE = "nok";
 var INIT_EVENT = "init";
-var DEEP = "deep";
-var SHALLOW = "shallow";
+var nextEventMap = { "n1ღGroup 1": "init", "n1::n0ღNumber": null, "n1::n2ღOther": null, "n1::n3ღDone": null };
 
 function createStateMachine(fsmDefForCompile, settings) {
   var actions = fsmDefForCompile.actionFactories;
@@ -19,8 +18,6 @@ function createStateMachine(fsmDefForCompile, settings) {
     "n1::n2ღOther": ["n1ღGroup 1"],
     "n1::n3ღDone": ["n1ღGroup 1"],
   };
-  var isStateWithEventlessTransition = {};
-  var isCompoundControlState = { "n1ღGroup 1": true };
   var cs = initialControlState;
   var es = initialExtendedState;
 
@@ -91,11 +88,9 @@ function createStateMachine(fsmDefForCompile, settings) {
       // cs, es, hs have been updated in place by the handler
       // Run any automatic transition too
       var outputs = computed.outputs;
-      let nextEvent = isCompoundControlState[cs] ? INIT_EVENT : isStateWithEventlessTransition[cs] ? "" : null;
-      let nextOutputs = [];
-      if (nextEvent !== null) {
-        nextOutputs = process({ [nextEvent]: eventData });
-      }
+      let nextEvent = nextEventMap[cs];
+      if (nextEvent == null) return outputs;
+      const nextOutputs = process({ [nextEvent]: eventData });
 
       return outputs.concat(nextOutputs);
     }

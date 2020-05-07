@@ -1,6 +1,6 @@
 // TODO
 const { Try, TryModule, Success, Failure, None, Some, Left, Right } = require('funfix');
-const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts } = require('kingly');
+const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT } = require('kingly');
 const ejs = require('ejs');
 const { concat } = require('ramda');
 const { templateIntro, transitionWithoutGuard,mainLoop, cjsExports, esmExports } = require('./templates');
@@ -80,13 +80,18 @@ function compileYedFile(_file) {
         }
         return acc
       }, {});
+      const nextEventMap = historyMaps.stateList.reduce((acc, state) => {
+        acc[state] = isStateWithEventlessTransition[state] ? '' : isCompoundControlState[state] ? INIT_EVENT : null;
+        return acc
+      }, {});
+      const hasAutomaticEvents = Object.keys(nextEventMap).some(state => nextEventMap[state] != null);
       const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
         if (transition.guards) return transition.guards.some(({to}) => typeof to === 'object')
         else return typeof transition.to === 'object'
       });
 
         const compiledContents = [
-          templateIntro(usesHistoryStates),
+          templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
           `function createStateMachine(fsmDefForCompile, settings) {`,
           `var actions = fsmDefForCompile.actionFactories;`,
           `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
@@ -97,8 +102,6 @@ function compileYedFile(_file) {
           ``,
           `// initialize`,
           `var stateAncestors = ${JSON.stringify(stateAncestors)};`,
-          `var isStateWithEventlessTransition = ${JSON.stringify(isStateWithEventlessTransition)}`,
-          `var isCompoundControlState = ${JSON.stringify(isCompoundControlState)}`,
           `var cs = initialControlState;`,
           `var es = initialExtendedState;`,
           usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,
@@ -139,7 +142,7 @@ function compileYedFile(_file) {
           `}`,
           ``,
           // NOw the main function
-          mainLoop,
+          mainLoop(nextEventMap, hasAutomaticEvents),
           `}`,
         ].join('\n ').trim();
 
