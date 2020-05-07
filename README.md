@@ -14,11 +14,11 @@ We thus decided to use `prettifyer`, include comments in the generated code, and
 In a typical process, I start designing a machine from the specifications by drawing it in the yEd editor. When I am done or ready to test the results of my design, I save the file. yEd by default saves its files in a `.graphml` format. I save the graphml file in the same directory in which I want to use the created state machine. From there, a previously launched watcher runs the `slim` node script on the newly saved file and generates the compiled JavaScript file which exports the machine factory -- you can of course also run the script manually instead of using a watcher. The provided exports can then be used as parameters to create a Kingly state machine.
 
 # Install
-`npm install lesser`
+`npm install slim`
 
 # Usage
 ```bash
-lesser file.graphml
+slim file.graphml
 ```
 
 Running the converter produces two files, targeted at consumption in a browser and node.js environment:
