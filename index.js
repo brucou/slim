@@ -3,7 +3,7 @@ const { Try, TryModule, Success, Failure, None, Some, Left, Right } = require('f
 const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT } = require('kingly');
 const ejs = require('ejs');
 const { concat } = require('ramda');
-const { templateIntro, transitionWithoutGuard,mainLoop, cjsExports, esmExports } = require('./templates');
+const { templateIntro, transitionWithoutGuard, mainLoop, cjsExports, esmExports } = require('./templates');
 // This one is from jest and is terrific to format object nicely
 // but we used JSON.stringify in the end as we need JS-legit formatting here
 // Kept here because I never remember the name of the module
@@ -70,25 +70,33 @@ function compileYedFile(_file) {
         }, {});
         const isStateWithEventlessTransition = transitions.reduce((isStateWithEventlessTransition, transition) => {
           const { from, event } = transition;
-          if (event === "") {isStateWithEventlessTransition[from] = true};
+          if (event === '') {
+            isStateWithEventlessTransition[from] = true;
+          }
+          ;
 
           return isStateWithEventlessTransition;
         }, {});
-      const isCompoundControlState = historyMaps.stateList.reduce((acc, state) => {
-        if (stateAncestors && stateAncestors[state]) {
-          stateAncestors[state].forEach(stateAncestor => acc[stateAncestor] = true)
-        }
-        return acc
-      }, {});
-      const nextEventMap = historyMaps.stateList.reduce((acc, state) => {
-        acc[state] = isStateWithEventlessTransition[state] ? '' : isCompoundControlState[state] ? INIT_EVENT : null;
-        return acc
-      }, {});
-      const hasAutomaticEvents = Object.keys(nextEventMap).some(state => nextEventMap[state] != null);
-      const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
-        if (transition.guards) return transition.guards.some(({to}) => typeof to === 'object')
-        else return typeof transition.to === 'object'
-      });
+        const isCompoundControlState = historyMaps.stateList.reduce((acc, state) => {
+          if (stateAncestors && stateAncestors[state]) {
+            stateAncestors[state].forEach(stateAncestor => acc[stateAncestor] = true);
+          }
+          return acc;
+        }, {});
+        const nextEventMap = historyMaps.stateList.reduce((acc, state) => {
+          acc[state] = isStateWithEventlessTransition[state] ? '' : isCompoundControlState[state] ? INIT_EVENT : null;
+          return acc;
+        }, {});
+        const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
+          if (transition.guards) return transition.guards.some(({ to }) => typeof to === 'object');
+          else return typeof transition.to === 'object';
+        });
+        // The usesHistoryStates guard is important as transitioning to an
+        // history pseudo state may lead to a transition to a compound state,
+        // hence we have an hidden automatic transition here
+        //  NOTE: while being false does not mean that there is an automatic event
+        // being false means that there is none such event
+        const hasAutomaticEvents = usesHistoryStates || Object.keys(nextEventMap).some(state => nextEventMap[state] != null);
 
         const compiledContents = [
           templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
@@ -127,8 +135,8 @@ function compileYedFile(_file) {
                       }).join('\n'),
                       `if (computed !== null) {
                       es = updateState(es, computed.updates);`,
-                      usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs);` || "",
-`                  }
+                      usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs);` || '',
+                      `                  }
                     return computed
                   `,
                       `},`,
@@ -149,14 +157,14 @@ function compileYedFile(_file) {
         return compiledContents;
       })
         .flatMap(compiledContents => Try.of(() => {
-          // Write the esm output file
-          const esmContents = [compiledContents, esmExports].join("\n\n");
-            const prettyEsmFileContents = prettier.format(esmContents , { semi: true, parser: 'babel', printWidth: 120 });
-            fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents );
-          // Write the cjs output file
-          const cjsContents = [compiledContents, cjsExports,""].join("\n\n");
+            // Write the esm output file
+            const esmContents = [compiledContents, esmExports].join('\n\n');
+            const prettyEsmFileContents = prettier.format(esmContents, { semi: true, parser: 'babel', printWidth: 120 });
+            fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents);
+            // Write the cjs output file
+            const cjsContents = [compiledContents, cjsExports, ''].join('\n\n');
             const prettyCjsFileContents = prettier.format(cjsContents, { semi: true, parser: 'babel', printWidth: 120 });
-            fs.writeFileSync(`${file}.fsm.compiled.cjs`, prettyCjsFileContents );
+            fs.writeFileSync(`${file}.fsm.compiled.cjs`, prettyCjsFileContents);
           },
         )),
     );
