@@ -1,4 +1,3 @@
-// TODO
 const { Try, TryModule, Success, Failure, None, Some, Left, Right } = require('funfix');
 const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT } = require('kingly');
 const ejs = require('ejs');
