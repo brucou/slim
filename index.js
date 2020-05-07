@@ -108,7 +108,7 @@ function compileYedFile(_file) {
           `var initialControlState = INIT_STATE`,
           `var initialExtendedState = fsmDefForCompile.initialExtendedState;`,
           ``,
-          `// initialize`,
+          `// Initialize machine state`,
           `var stateAncestors = ${JSON.stringify(stateAncestors)};`,
           `var cs = initialControlState;`,
           `var es = initialExtendedState;`,
@@ -181,6 +181,4 @@ function compileYedFile(_file) {
 }
 
 
-// TODO: optimize later
-// cf. TODO.md
-// could also be good to CLEAN some code and remove craft coming from copy-pasting yed2kingly
+// TODO: cf. TODO.md

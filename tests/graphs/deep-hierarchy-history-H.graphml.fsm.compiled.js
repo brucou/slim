@@ -39,7 +39,7 @@ function createStateMachine(fsmDefForCompile, settings) {
   var initialControlState = INIT_STATE;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
-  // initialize
+  // Initialize machine state
   var stateAncestors = {
     "n2::n0ღB": ["n2ღGroup 1"],
     "n2::n1ღC": ["n2ღGroup 1"],

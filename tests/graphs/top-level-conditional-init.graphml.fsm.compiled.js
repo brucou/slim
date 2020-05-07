@@ -11,7 +11,7 @@ function createStateMachine(fsmDefForCompile, settings) {
   var initialControlState = INIT_STATE;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
-  // initialize
+  // Initialize machine state
   var stateAncestors = {};
   var cs = initialControlState;
   var es = initialExtendedState;
@@ -85,6 +85,5 @@ function createStateMachine(fsmDefForCompile, settings) {
 
   return process;
 }
-
 
 export { createStateMachine };

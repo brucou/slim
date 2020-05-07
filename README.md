@@ -3,6 +3,13 @@ The `slim` package aims at supporting the creation of state machines with the [K
 
 With the [yed graph editor](https://www.yworks.com/products/yed-live), [devtool](https://github.com/brucou/yed2Kingly) and the present compiler, we believe the minimal set of pieces is in place for developing and maintaining comfortably large Kingly state machines.
 
+# Guiding principles
+- the generated code should be readable by a human
+- the generated code should work in as many browsers as possible with a minimum of polyfills
+- the generated code should be easy to debug
+
+We thus decided to use `prettifyer`, include comments in the generated code, and avoid arrow functions and other newer JavaScript language features.
+
 # How does it work?
 In a typical process, I start designing a machine from the specifications by drawing it in the yEd editor. When I am done or ready to test the results of my design, I save the file. yEd by default saves its files in a `.graphml` format. I save the graphml file in the same directory in which I want to use the created state machine. From there, a previously launched watcher runs the `slim` node script on the newly saved file and generates the compiled JavaScript file which exports the machine factory -- you can of course also run the script manually instead of using a watcher. The provided exports can then be used as parameters to create a Kingly state machine.
 
@@ -74,6 +81,12 @@ Some definitions:
 There are plenty of graph examples in the [test directory](https://github.com/brucou/slim/tree/master/tests/graphs). An example, extracted from the tests directory and involving compound states and history pseudo-states is as follows:
 
 ![example of yed graph with history pseudo-state and compound state](https://imgur.com/VjKaIkL.png)
+
+The compiled machine is below 170 lines of code and the minified compressed size is below 1KB.
+
+# Size of file generated
+The size file is mostly proportional to the sum of the number of control states and the number of transitions of the graph. The proportional coefficient seems to be fairly low.
+
 
 # Tests
 Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](https://github.com/brucou/slim/tree/master/tests) and run:
