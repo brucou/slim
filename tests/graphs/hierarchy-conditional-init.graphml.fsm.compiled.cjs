@@ -3,23 +3,6 @@ var INIT_EVENT = "init";
 var DEEP = "deep";
 var SHALLOW = "shallow";
 
-function updateHistoryState(history, stateAncestors, state_from_name) {
-  if (state_from_name === INIT_STATE) {
-    return history;
-  } else {
-    var ancestors = stateAncestors[state_from_name] || [];
-    ancestors.reduce((oldAncestor, newAncestor) => {
-      // set the exited state in the history of all ancestors
-      history[DEEP][newAncestor] = state_from_name;
-      history[SHALLOW][newAncestor] = oldAncestor;
-
-      return newAncestor;
-    }, state_from_name);
-
-    return history;
-  }
-}
-
 function createStateMachine(fsmDefForCompile, settings) {
   var actions = fsmDefForCompile.actionFactories;
   actions["ACTION_IDENTITY"] = function () {
@@ -36,10 +19,6 @@ function createStateMachine(fsmDefForCompile, settings) {
   var isCompoundControlState = { "n2ღGroup 1": true };
   var cs = initialControlState;
   var es = initialExtendedState;
-  var hs = {
-    deep: { n1ღA: "", "n2ღGroup 1": "", "n2::n0ღB": "", "n2::n2ღC": "" },
-    shallow: { n1ღA: "", "n2ღGroup 1": "", "n2::n0ღB": "", "n2::n2ღC": "" },
-  };
 
   var eventHandlers = {
     nok: {
@@ -48,7 +27,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n1ღA";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -65,7 +43,6 @@ function createStateMachine(fsmDefForCompile, settings) {
         }
         if (computed !== null) {
           es = updateState(es, computed.updates);
-          hs = updateHistoryState(hs, stateAncestors, cs);
         }
         return computed;
       },
@@ -76,7 +53,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2ღGroup 1";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },

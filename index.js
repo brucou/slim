@@ -24,7 +24,6 @@ program
 program.parse(process.argv);
 
 // Conversion function
-// DOC: We export two files: one cjs for node.js and js for browser esm consumption
 // NTH: May could be the export through an option (to generate module.exports = ...)
 // NTH: handle several files at the same time
 // NTH: add an output option
@@ -53,13 +52,12 @@ function compileYedFile(_file) {
         const isValid = checkKinglyContracts(states, events, transitionsWithFakeGuardsActions);
         // This is an option actually. If not null then it is an array of errors
         if (!isValid) {
-          // console.error(`The input graph does not represent a valid Kingly machine! Cf. log.`)
           console.error(isValid);
           throw new Error(`The input graph does not represent a valid Kingly machine! Cf. log.`);
         }
-        // So we read the file, we have our transitions, states and events for a valid graph,
-        // let's compile\
 
+        // So we read the file, we have our transitions, states and events for a valid graph,
+        // let's compile
         const historyMaps = computeHistoryMaps(states);
         const initialHistoryState = initHistoryDataStructure(historyMaps.stateList);
         const stateAncestors = historyMaps.stateAncestors;
@@ -76,16 +74,19 @@ function compileYedFile(_file) {
 
           return isStateWithEventlessTransition;
         }, {});
-
       const isCompoundControlState = historyMaps.stateList.reduce((acc, state) => {
         if (stateAncestors && stateAncestors[state]) {
           stateAncestors[state].forEach(stateAncestor => acc[stateAncestor] = true)
         }
         return acc
       }, {});
+      const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
+        if (transition.guards) return transition.guards.some(({to}) => typeof to === 'object')
+        else return typeof transition.to === 'object'
+      });
 
         const compiledContents = [
-          templateIntro,
+          templateIntro(usesHistoryStates),
           `function createStateMachine(fsmDefForCompile, settings) {`,
           `var actions = fsmDefForCompile.actionFactories;`,
           `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
@@ -100,8 +101,7 @@ function compileYedFile(_file) {
           `var isCompoundControlState = ${JSON.stringify(isCompoundControlState)}`,
           `var cs = initialControlState;`,
           `var es = initialExtendedState;`,
-          `var hs = ${JSON.stringify(initialHistoryState)};`,
-          ``,
+          usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,
           `var eventHandlers = {`,
           Object.keys(transitionsPerOrigin).reduce((str, from) => {
             return str + [
@@ -115,7 +115,7 @@ function compileYedFile(_file) {
 
                 return str +
                   `${JSON.stringify(event)}:  ${!guards
-                    ? transitionWithoutGuard(action, to)
+                    ? transitionWithoutGuard(action, to, usesHistoryStates)
                     : [
                       `function (es, ed, stg){`,
                       `let computed = null;`,
@@ -123,9 +123,9 @@ function compileYedFile(_file) {
                         return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  actions["${action.slice(3, -3)}"](es, ed, stg); cs = ${resolve(to)};}`;
                       }).join('\n'),
                       `if (computed !== null) {
-                      es = updateState(es, computed.updates);
-                      hs = updateHistoryState(hs, stateAncestors, cs);
-                  }
+                      es = updateState(es, computed.updates);`,
+                      usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs);` || "",
+`                  }
                     return computed
                   `,
                       `},`,

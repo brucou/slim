@@ -3,23 +3,6 @@ var INIT_EVENT = "init";
 var DEEP = "deep";
 var SHALLOW = "shallow";
 
-function updateHistoryState(history, stateAncestors, state_from_name) {
-  if (state_from_name === INIT_STATE) {
-    return history;
-  } else {
-    var ancestors = stateAncestors[state_from_name] || [];
-    ancestors.reduce((oldAncestor, newAncestor) => {
-      // set the exited state in the history of all ancestors
-      history[DEEP][newAncestor] = state_from_name;
-      history[SHALLOW][newAncestor] = oldAncestor;
-
-      return newAncestor;
-    }, state_from_name);
-
-    return history;
-  }
-}
-
 function createStateMachine(fsmDefForCompile, settings) {
   var actions = fsmDefForCompile.actionFactories;
   actions["ACTION_IDENTITY"] = function () {
@@ -52,36 +35,6 @@ function createStateMachine(fsmDefForCompile, settings) {
   };
   var cs = initialControlState;
   var es = initialExtendedState;
-  var hs = {
-    deep: {
-      n1ღA: "",
-      "n2ღGroup 1": "",
-      "n2::n0ღB": "",
-      "n2::n2ღGroup 2": "",
-      "n2::n2::n1ღGroup 3": "",
-      "n2::n2::n1::n0ღB": "",
-      "n2::n2::n1::n2ღC": "",
-      "n2::n2::n1::n3ღGroup 4": "",
-      "n2::n2::n1::n3::n0ღA": "",
-      "n2::n2::n1::n3::n1ღB": "",
-      "n2::n2::n1::n3::n2ღC": "",
-      "n2::n2::n1::n3::n3ღD": "",
-    },
-    shallow: {
-      n1ღA: "",
-      "n2ღGroup 1": "",
-      "n2::n0ღB": "",
-      "n2::n2ღGroup 2": "",
-      "n2::n2::n1ღGroup 3": "",
-      "n2::n2::n1::n0ღB": "",
-      "n2::n2::n1::n2ღC": "",
-      "n2::n2::n1::n3ღGroup 4": "",
-      "n2::n2::n1::n3::n0ღA": "",
-      "n2::n2::n1::n3::n1ღB": "",
-      "n2::n2::n1::n3::n2ღC": "",
-      "n2::n2::n1::n3::n3ღD": "",
-    },
-  };
 
   var eventHandlers = {
     nok: {
@@ -90,7 +43,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n1ღA";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -101,7 +53,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2ღGroup 1";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -112,7 +63,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2ღGroup 2";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -123,7 +73,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n0ღB";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -134,7 +83,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1ღGroup 3";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -145,7 +93,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3ღGroup 4";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -162,7 +109,6 @@ function createStateMachine(fsmDefForCompile, settings) {
         }
         if (computed !== null) {
           es = updateState(es, computed.updates);
-          hs = updateHistoryState(hs, stateAncestors, cs);
         }
         return computed;
       },
@@ -173,7 +119,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3::n1ღB";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -182,7 +127,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3::n2ღC";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -193,7 +137,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3::n3ღD";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -204,7 +147,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3::n3ღD";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },
@@ -218,7 +160,6 @@ function createStateMachine(fsmDefForCompile, settings) {
         }
         if (computed !== null) {
           es = updateState(es, computed.updates);
-          hs = updateHistoryState(hs, stateAncestors, cs);
         }
         return computed;
       },
@@ -229,7 +170,6 @@ function createStateMachine(fsmDefForCompile, settings) {
 
         cs = "n2::n2::n1::n3::n0ღA";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
 
         return computed;
       },

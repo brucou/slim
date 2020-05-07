@@ -1,14 +1,15 @@
 const { resolve } = require('./helpers');
 const { INIT_STATE, INIT_EVENT, DEEP, SHALLOW } = require('kingly');
 
-const templateIntro = [
+const templateIntro = usesHistoryStates => ([[
   `var INIT_STATE = "${INIT_STATE}";`,
   `var INIT_EVENT = "${INIT_EVENT}";`,
   `var DEEP = "${DEEP}";`,
   `var SHALLOW = "${SHALLOW}";`,
   ``,
-  `
-  function updateHistoryState(history, stateAncestors, state_from_name) {
+  ].join('\n'),
+  usesHistoryStates && `
+function updateHistoryState(history, stateAncestors, state_from_name) {
   if (state_from_name === INIT_STATE) {
     return history
   }
@@ -25,18 +26,17 @@ const templateIntro = [
     return history
   }
 }
-`.trim(),
-  ``].join('\n');
+`.trim() || ``,
+  ``]).join('\n');
 
-const transitionWithoutGuard = (action, to) => {
+const transitionWithoutGuard = (action, to, usesHistoryStates) => {
   return [
     `function (es, ed, stg){`,
     `let computed = actions[\"${action.slice(3, -3)}\"](es, ed, stg)`,
     ``,
     `        cs = ${resolve(to)};`,
     `es = updateState(es, computed.updates);`,
-    `hs = updateHistoryState(hs, stateAncestors, cs)`,
-    ``,
+    usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs); \n` || ``,
     `return computed`,
     `},`,
   ].join('\n');
