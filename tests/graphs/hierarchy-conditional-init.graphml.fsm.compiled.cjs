@@ -2,7 +2,7 @@ var INIT_STATE = "nok";
 var INIT_EVENT = "init";
 var nextEventMap = { n1ღA: null, "n2ღGroup 1": "init", "n2::n0ღB": null, "n2::n2ღC": null };
 
-function createStateMachine(fsmDefForCompile, settings) {
+function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
   actions["ACTION_IDENTITY"] = function () {
     return { updates: [], outputs: [] };
@@ -66,7 +66,7 @@ function createStateMachine(fsmDefForCompile, settings) {
 
     if (controlStateHandlingEvent) {
       // Run the handler
-      var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, settings);
+      var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
       // there was a transition, but no guards were fulfilled, we're done
       if (computed === null) return null;

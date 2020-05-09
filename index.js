@@ -100,7 +100,7 @@ module.exports = function slim(argv) {
 
           const compiledContents = [
             templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
-            `function createStateMachine(fsmDefForCompile, settings) {`,
+            `function createStateMachine(fsmDefForCompile, stg) {`,
             `var actions = fsmDefForCompile.actionFactories;`,
             `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
             `var guards = fsmDefForCompile.guards;`,

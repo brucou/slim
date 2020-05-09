@@ -55,7 +55,7 @@ function process(event){
 
   if (controlStateHandlingEvent) {
     // Run the handler
-    var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, settings);
+    var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
     // there was a transition, but no guards were fulfilled, we're done
     if (computed === null) return null

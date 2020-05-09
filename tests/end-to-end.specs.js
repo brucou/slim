@@ -20,7 +20,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/top-level-conditional-init.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       console.error(err);
@@ -77,7 +77,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/no-hierarchy-events-eventless.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -129,9 +129,9 @@ describe('End-to-end graphml to kingly', function() {
         // if (index > 20) return
         const fsm = createStateMachine(fsmDef1, settings);
         const outputs = scenario.map(fsm);
-        console.log(`scenario`, prettyFormat(scenario));
-        console.log(`outputs`, outputs);
-        console.log(`expected`, expected1[index]);
+        // console.log(`scenario`, prettyFormat(scenario));
+        // console.log(`outputs`, outputs);
+        // console.log(`expected`, expected1[index]);
         assert.deepEqual(outputs, expected1[index], prettyFormat(scenario));
       });
       // assert.deepEqual(outputs2, expected2, `Branch machine initialized with string ok`);
@@ -143,9 +143,9 @@ describe('End-to-end graphml to kingly', function() {
         // if (index > 20) return
         const fsm = createStateMachine(fsmDef2, settings);
         const outputs = scenario.map(fsm);
-        console.log(`scenario`, prettyFormat(scenario));
-        console.log(`outputs`, outputs);
-        console.log(`expected`, expected2[index]);
+        // console.log(`scenario`, prettyFormat(scenario));
+        // console.log(`outputs`, outputs);
+        // console.log(`expected`, expected2[index]);
         assert.deepEqual(outputs, expected2[index], prettyFormat(scenario));
       });
     });
@@ -245,7 +245,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/no-hierarchy-eventful-eventless-guards.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -308,9 +308,9 @@ describe('End-to-end graphml to kingly', function() {
         if (index !== 2) return
         const fsm = createStateMachine(fsmDef2, settings);
         const outputs = scenario.map(fsm);
-        console.log(`scenario`, prettyFormat(scenario));
-        console.log(`outputs`, outputs);
-        console.log(`expected`, expected2[index]);
+        // console.log(`scenario`, prettyFormat(scenario));
+        // console.log(`outputs`, outputs);
+        // console.log(`expected`, expected2[index]);
         assert.deepEqual(outputs, expected2[index], prettyFormat([index].concat(scenario)));
       });
     });
@@ -422,7 +422,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/top-level-conditional-init-with-hierarchy.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -479,7 +479,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/hierarchy-conditional-init.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -537,7 +537,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/deep-hierarchy-conditional-automatic-init-event-eventless.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -671,7 +671,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/hierarchy-history-H.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -756,7 +756,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/hierarchy-history-H-star.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -840,7 +840,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/deep-hierarchy-history-H-star.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
@@ -927,7 +927,7 @@ describe('End-to-end graphml to kingly', function() {
     // run the script on the test file
     const graphMlFile = './graphs/deep-hierarchy-history-H.graphml';
     try {
-      execSync(`node ../index ${graphMlFile}`, [], { cwd: TEST_DIR });
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
     }
     catch (err) {
       assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
