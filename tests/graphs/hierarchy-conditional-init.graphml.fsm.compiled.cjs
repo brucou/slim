@@ -6,7 +6,7 @@ function createStateMachine(fsmDefForCompile, stg) {
   var updateState = fsmDefForCompile.updateState;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
-  // Initialize machine state
+  // Initialize machine state,
   var stateAncestors = { "n2::n0ღB": ["n2ღGroup 1"], "n2::n2ღC": ["n2ღGroup 1"] };
   var cs = "nok";
   var es = initialExtendedState;

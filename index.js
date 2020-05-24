@@ -108,8 +108,13 @@ module.exports = function slim(argv) {
             // `var initialControlState = INIT_STATE`,
             `var initialExtendedState = fsmDefForCompile.initialExtendedState;`,
             ``,
-            `// Initialize machine state`,
-            `var stateAncestors = ${JSON.stringify(stateAncestors)};`,
+
+            Object.keys(stateAncestors).length === 0 ? `
+            // Initialize machine state,
+            `.trim(): `
+            // Initialize machine state,
+            var stateAncestors = ${JSON.stringify(stateAncestors)};
+            `.trim(),
             `var cs = ${JSON.stringify(INIT_STATE)};`,
             `var es = initialExtendedState;`,
             usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,

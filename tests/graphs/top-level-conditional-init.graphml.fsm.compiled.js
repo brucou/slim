@@ -4,8 +4,7 @@ function createStateMachine(fsmDefForCompile, stg) {
   var updateState = fsmDefForCompile.updateState;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
-  // Initialize machine state
-  var stateAncestors = {};
+  // Initialize machine state,
   var cs = "nok";
   var es = initialExtendedState;
 
