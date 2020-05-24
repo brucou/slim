@@ -1,6 +1,6 @@
 module.exports = function slim(argv) {
   const { Try, TryModule, Success, Failure, None, Some, Left, Right } = require('funfix');
-  const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT } = require('kingly');
+  const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT, INIT_STATE } = require('kingly');
   const ejs = require('ejs');
   const { concat } = require('ramda');
   const { templateIntro, transitionWithoutGuard, mainLoop, cjsExports, esmExports } = require('./templates');
@@ -102,15 +102,15 @@ module.exports = function slim(argv) {
             templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
             `function createStateMachine(fsmDefForCompile, stg) {`,
             `var actions = fsmDefForCompile.actionFactories;`,
-            `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
+            // `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
             `var guards = fsmDefForCompile.guards;`,
             `var updateState = fsmDefForCompile.updateState;`,
-            `var initialControlState = INIT_STATE`,
+            // `var initialControlState = INIT_STATE`,
             `var initialExtendedState = fsmDefForCompile.initialExtendedState;`,
             ``,
             `// Initialize machine state`,
             `var stateAncestors = ${JSON.stringify(stateAncestors)};`,
-            `var cs = initialControlState;`,
+            `var cs = ${JSON.stringify(INIT_STATE)};`,
             `var es = initialExtendedState;`,
             usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,
             `var eventHandlers = {`,
@@ -131,12 +131,20 @@ module.exports = function slim(argv) {
                         `function (es, ed, stg){`,
                         `let computed = null;`,
                         guards.map(({ predicate, to, action }, index) => {
-                          return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  actions["${action.slice(3, -3)}"](es, ed, stg); cs = ${resolve(to)};}`;
+                          const actionName = action.slice(3, -3);
+                          if (actionName === 'ACTION_IDENTITY') {
+                            const computed = ACTION_IDENTITY();
+                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  ${JSON.stringify(computed)}; cs = ${resolve(to)};}`;
+                          }
+                          else {
+                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  actions["${action.slice(3, -3)}"](es, ed, stg); cs = ${resolve(to)};}`;
+                          }
                         }).join('\n'),
                         `if (computed !== null) {
                       es = updateState(es, computed.updates);`,
                         usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs);` || '',
                         `                  }
+                        
                     return computed
                   `,
                         `},`,
@@ -150,7 +158,7 @@ module.exports = function slim(argv) {
             `}`,
             ``,
             // NOw the main function
-            mainLoop(nextEventMap, hasAutomaticEvents),
+            mainLoop(nextEventMap, hasAutomaticEvents, stateAncestors),
             `}`,
           ].join('\n ').trim();
 
@@ -181,6 +189,6 @@ module.exports = function slim(argv) {
   }
 
 // TODO: cf. TODO.md
-}
+};
 
 

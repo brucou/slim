@@ -1,31 +1,22 @@
-var INIT_STATE = "nok";
-var INIT_EVENT = "init";
 var nextEventMap = { n1ღA: null, n2ღTemp1: "", n3ღTemp2: "", n4ღDone: "" };
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
-  actions["ACTION_IDENTITY"] = function () {
-    return { updates: [], outputs: [] };
-  };
   var guards = fsmDefForCompile.guards;
   var updateState = fsmDefForCompile.updateState;
-  var initialControlState = INIT_STATE;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state
   var stateAncestors = {};
-  var cs = initialControlState;
+  var cs = "nok";
   var es = initialExtendedState;
 
   var eventHandlers = {
     nok: {
       init: function (es, ed, stg) {
-        let computed = actions["ACTION_IDENTITY"](es, ed, stg);
+        cs = "n1ღA"; // No action, only cs changes!
 
-        cs = "n1ღA";
-        es = updateState(es, computed.updates);
-
-        return computed;
+        return { outputs: [], updates: [] };
       },
     },
     n1ღA: {
@@ -44,13 +35,13 @@ function createStateMachine(fsmDefForCompile, stg) {
         if (computed !== null) {
           es = updateState(es, computed.updates);
         }
+
         return computed;
       },
     },
     n2ღTemp1: {
       "": function (es, ed, stg) {
         let computed = actions["logTemp1toA"](es, ed, stg);
-
         cs = "n1ღA";
         es = updateState(es, computed.updates);
 
@@ -60,7 +51,6 @@ function createStateMachine(fsmDefForCompile, stg) {
     n3ღTemp2: {
       "": function (es, ed, stg) {
         let computed = actions["logTemp2toA"](es, ed, stg);
-
         cs = "n1ღA";
         es = updateState(es, computed.updates);
 
@@ -71,12 +61,13 @@ function createStateMachine(fsmDefForCompile, stg) {
       "": function (es, ed, stg) {
         let computed = null;
         if (guards["shouldReturnToA"](es, ed, stg)) {
-          computed = actions["ACTION_IDENTITY"](es, ed, stg);
+          computed = { outputs: [], updates: [] };
           cs = "n1ღA";
         }
         if (computed !== null) {
           es = updateState(es, computed.updates);
         }
+
         return computed;
       },
     },
@@ -85,35 +76,27 @@ function createStateMachine(fsmDefForCompile, stg) {
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
-
-    var controlStateHandlingEvent = [cs].concat(stateAncestors[cs] || []).find(function (controlState) {
-      return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
-    });
+    var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 
     if (controlStateHandlingEvent) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
-      // there was a transition, but no guards were fulfilled, we're done
-      if (computed === null) return null;
-
       // cs, es, hs have been updated in place by the handler
-      // Run any automatic transition too
-      var outputs = computed.outputs;
-      let nextEvent = nextEventMap[cs];
-      if (nextEvent == null) return outputs;
-      const nextOutputs = process({ [nextEvent]: eventData });
-
-      return outputs.concat(nextOutputs);
+      return computed === null
+        ? // If transition, but no guards fulfilled => null, else
+          null
+        : nextEventMap[cs] === null
+        ? computed.outputs
+        : // Run automatic transition if any
+          computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));
     }
     // Event is not accepted by the machine
-    else {
-      return null;
-    }
+    else return null;
   }
 
   // Start the machine
-  process({ [INIT_EVENT]: initialExtendedState });
+  process({ ["init"]: initialExtendedState });
 
   return process;
 }

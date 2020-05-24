@@ -8,3 +8,8 @@
   - history should be kept only for those compound states with H/H*, with a transition to that, and updated when leaving those states or their descendants
   - that said, for all this complication we only save X - Y lines, where X is the sum of depths in the state tree and Y is the depth of descending tree from the H/H*
   - so in graph with 25 states and 3 history final, we save < 22 lines of code (out of probably 500)     
+
+- I could replace action identity directy by the outputs!!! 
+- replace initialControlState directly *(only used once...) et initialExtendedState
+- can also replace INIT_STATE, INIT_EVENT by their value
+- {return null} can be expressed in one line

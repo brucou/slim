@@ -1,26 +1,26 @@
 const { resolve } = require('./helpers');
-const { INIT_STATE, INIT_EVENT, DEEP, SHALLOW } = require('kingly');
+const { INIT_STATE, INIT_EVENT, DEEP, SHALLOW, ACTION_IDENTITY } = require('kingly');
 
 const templateIntro = (usesHistoryStates, hasAutomaticEvents, nextEventMap) => ([[
-  `var INIT_STATE = "${INIT_STATE}";`,
-  `var INIT_EVENT = "${INIT_EVENT}";`,
+  // `var INIT_STATE = "${INIT_STATE}";`,
+  // `var INIT_EVENT = "${INIT_EVENT}";`,
   hasAutomaticEvents && `var nextEventMap = ${JSON.stringify(nextEventMap)}` || "",
-  usesHistoryStates && `
-  var DEEP = "${DEEP}";
-  var SHALLOW = "${SHALLOW}";` || "",
+  // usesHistoryStates && `
+  // var DEEP = "${DEEP}";
+  // var SHALLOW = "${SHALLOW}";` || "",
   `\n`,
   ].join(''),
   usesHistoryStates && `
 function updateHistoryState(history, stateAncestors, state_from_name) {
-  if (state_from_name === INIT_STATE) {
+  if (state_from_name === ${JSON.stringify(INIT_STATE)}) {
     return history
   }
   else {
       var ancestors = stateAncestors[state_from_name] || [];
       ancestors.reduce((oldAncestor, newAncestor) => {
         // set the exited state in the history of all ancestors
-        history[DEEP][newAncestor] = state_from_name;
-        history[SHALLOW][newAncestor] = oldAncestor;
+        history[${JSON.stringify(DEEP)}][newAncestor] = state_from_name;
+        history[${JSON.stringify(SHALLOW)}][newAncestor] = oldAncestor;
 
         return newAncestor
       }, state_from_name);
@@ -32,53 +32,71 @@ function updateHistoryState(history, stateAncestors, state_from_name) {
   ``]).join('\n');
 
 const transitionWithoutGuard = (action, to, usesHistoryStates) => {
-  return [
+  const actionName = action.slice(3, -3);
+  const isActionIdentity = actionName === 'ACTION_IDENTITY';
+  const computed = isActionIdentity ? ACTION_IDENTITY(): null;
+
+    return [
     `function (es, ed, stg){`,
-    `let computed = actions[\"${action.slice(3, -3)}\"](es, ed, stg)`,
-    ``,
-    `        cs = ${resolve(to)};`,
-    `es = updateState(es, computed.updates);`,
+      isActionIdentity
+        ? `
+        cs = ${resolve(to)}; // No action, only cs changes!
+        `.trim()
+      : `
+      let computed = actions[\"${action.slice(3, -3)}\"](es, ed, stg);
+        cs = ${resolve(to)};
+        es = updateState(es, computed.updates);
+      `.trim(),
+    // ``,
+    // `        cs = ${resolve(to)};`,
+    // `es = updateState(es, computed.updates);`,
     usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs); \n` || ``,
-    `return computed`,
+      isActionIdentity ? `return ${JSON.stringify(computed)}`: `return computed`,
     `},`,
   ].join('\n');
 };
 
-const mainLoop = (nextEventMap, hasAutomaticEvents) => (`
+const isGraphWithoutCompoundStates = stateAncestors => Object.keys(stateAncestors).length === 0;
+
+const mainLoop = (nextEventMap, hasAutomaticEvents, stateAncestors) => (`
 function process(event){
   var eventLabel = Object.keys(event)[0];
   var eventData = event[eventLabel];
-  
+${isGraphWithoutCompoundStates(stateAncestors)
+? `
+    var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
+`.trim()
+:`
   var controlStateHandlingEvent = [cs].concat(stateAncestors[cs]||[]).find(function(controlState){
     return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
   });
+`.trim()   
+}   
 
   if (controlStateHandlingEvent) {
     // Run the handler
     var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
-    // there was a transition, but no guards were fulfilled, we're done
-    if (computed === null) return null
-
     // cs, es, hs have been updated in place by the handler
-    // Run any automatic transition too
     ${hasAutomaticEvents ? `
-    var outputs = computed.outputs;
-    let nextEvent = nextEventMap[cs];
-    if (nextEvent == null) return outputs
-    const nextOutputs = process({[nextEvent]: eventData});
-    
-    return outputs.concat(nextOutputs)
+    return computed === null
+    // If transition, but no guards fulfilled => null, else 
+     ? null
+     : nextEventMap[cs] === null 
+       ? computed.outputs
+    // Run automatic transition if any
+       : computed.outputs.concat(process({[nextEventMap[cs]]: eventData}))
     `.trim() : `
-    return computed.outputs;
+    // If transition, but no guards fulfilled => null, else => computed outputs
+    return computed === null ? null : computed.outputs;
     `.trim()}
   }
   // Event is not accepted by the machine
-  else {return null}
+  else return null
 }
 
 // Start the machine
-process({[INIT_EVENT]: initialExtendedState});
+process({[${JSON.stringify(INIT_EVENT)}]: initialExtendedState});
 
 return process
 `).trim();

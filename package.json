@@ -1,6 +1,6 @@
 {
   "name": "slim",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "author": "brucou",
   "description": "Compile a Kingly state machine drawn in the yed professional graph editor down to JavaScript",
   "bin": {
