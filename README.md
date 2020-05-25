@@ -80,7 +80,7 @@ Some definitions:
 # Size of file generated
 There are plenty of graph examples in the [test directory](https://github.com/brucou/slim/tree/master/tests/graphs). 
 
-The size of the compiled file is mostly proportional to the sum of the number of control states and the number of transitions of the graph. The proportional coefficient seems to be fairly low and the compression factor increases with the size of the machine. In short, you need to write a really large graph to get to 5Kb just for the machine.
+The size of the compiled file follows the shape `a + b x Number of transitions`, i.e. is mostly proportional to the number of transitions of the graph. The proportional coefficient `b` seems to be fairly low and the compression factor increases with the size of the machine. In short, you need to write a really large graph to get to 5Kb just for the machine.
 
 We give two data points. Minification is performed online with the [javascript-minifier](https://javascript-minifier.com/) tool. The simple counter machine, which is about the smallest non-trivial machine that can be drawn:
 
@@ -194,6 +194,9 @@ export { createStateMachine };
 
 with a minified compressed size of 660 bytes. 
 
+Assuming 30 bytes per transitions (computed from those two data points), with a base line of 500 bytes, to reach 5KB we need a machine with 150 transitions!!
+
+Im summary, endowed with the present compiler, Kingly proposes state machines as a zero-cost abstraction.
 
 # Tests
 Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](https://github.com/brucou/slim/tree/master/tests) and run:  
