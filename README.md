@@ -210,4 +210,4 @@ mocha *specs*
 ``` 
 
 # Final note
-After using and working with state machine for the past four years, I believe I am reaching a satisfying API and process. The idea is really to avoid unnecessary complexity. I am however interested in hearing your comment, and suggestions together with use cases that you believe are not satisfactorily addressed -> post an issue in the project directory.  
+After using and working with state machine for the past four years, I believe I am reaching a satisfying API and process. The idea is really to avoid unnecessary complexity. I am however interested in hearing your comments, and suggestions together with use cases that you believe are not satisfactorily addressed -> post an issue in the project directory.  
