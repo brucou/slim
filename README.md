@@ -196,7 +196,7 @@ with a minified compressed size of 660 bytes.
 
 Assuming 30 bytes per transitions (computed from those two data points), with a base line of 500 bytes, to reach 5KB we need a machine with 150 transitions!!
 
-Im summary, endowed with the present compiler, Kingly proposes state machines as a zero-cost abstraction.
+Im summary, endowed with the present compiler, **Kingly proposes state machines as a zero-cost abstraction**.
 
 # Tests
 Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](https://github.com/brucou/slim/tree/master/tests) and run:  
