@@ -80,9 +80,9 @@ Some definitions:
 # Size of file generated
 There are plenty of graph examples in the [test directory](https://github.com/brucou/slim/tree/master/tests/graphs). 
 
-The size of the compiled file follows the shape `a + b x Number of transitions`, i.e. is mostly proportional to the number of transitions of the graph. The proportional coefficient `b` seems to be fairly low and the compression factor increases with the size of the machine. In short, you need to write a really large graph to get to 5Kb just for the machine.
+Assuming the machine has no isolated states (i.e. states which are not reached by any transitions), the size of the compiled file follows the shape `a + b x Number of transitions`, i.e. is mostly proportional to the number of transitions of the graph. The proportional coefficient `b` seems to be fairly low and the compression factor increases with the size of the machine. In short, you need to write a really large graph to get to 5Kb just for the machine.
 
-We give two data points. Minification is performed online with the [javascript-minifier](https://javascript-minifier.com/) tool. The simple counter machine, which is about the smallest non-trivial machine that can be drawn:
+We give two data points. Minification is performed online with the [javascript-minifier](https://javascript-minifier.com/) tool. Liens of code are counted with an [online tool](https://codetabs.com/count-loc/count-loc-online.html). The simple counter machine, which is about the smallest non-trivial machine that can be drawn:
 
 ![counter machine graph](./tests/graphs/counter.png)
 
