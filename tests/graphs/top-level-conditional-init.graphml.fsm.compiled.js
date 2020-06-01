@@ -1,3 +1,19 @@
+// Copy-paste help
+// For debugging purposes, guards and actions functions should all have a name
+// Using natural language sentences for labels in the graph is valid
+// guard and action functions name still follow JavaScript rules though
+// -----Guards------
+// const guards = {
+//   "isNumber": function (){},
+//   "not(isNumber)": function (){},
+// };
+// -----Actions------
+// const actions = {
+//   "logNumber": function (){},
+//   "logOther": function (){},
+// };
+// ----------------
+
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
   var guards = fsmDefForCompile.guards;
@@ -45,7 +61,6 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   };
-
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];

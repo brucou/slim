@@ -11,12 +11,12 @@ const templateIntro = (usesHistoryStates, hasAutomaticEvents, nextEventMap) => (
   `\n`,
   ].join(''),
   usesHistoryStates && `
-function updateHistoryState(history, stateAncestors, state_from_name) {
+function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === ${JSON.stringify(INIT_STATE)}) {
     return history
   }
   else {
-      var ancestors = stateAncestors[state_from_name] || [];
+      var ancestors = getAncestors(state_from_name) || [];
       ancestors.reduce((oldAncestor, newAncestor) => {
         // set the exited state in the history of all ancestors
         history[${JSON.stringify(DEEP)}][newAncestor] = state_from_name;
@@ -50,7 +50,7 @@ const transitionWithoutGuard = (action, to, usesHistoryStates) => {
     // ``,
     // `        cs = ${resolve(to)};`,
     // `es = updateState(es, computed.updates);`,
-    usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs); \n` || ``,
+    usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs); \n` || ``,
       isActionIdentity ? `return ${JSON.stringify(computed)}`: `return computed`,
     `},`,
   ].join('\n');
@@ -67,7 +67,7 @@ ${isGraphWithoutCompoundStates(stateAncestors)
     var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 `.trim()
 :`
-  var controlStateHandlingEvent = [cs].concat(stateAncestors[cs]||[]).find(function(controlState){
+  var controlStateHandlingEvent = [cs].concat(getAncestors(cs)||[]).find(function(controlState){
     return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
   });
 `.trim()   
@@ -82,7 +82,7 @@ ${isGraphWithoutCompoundStates(stateAncestors)
     return computed === null
     // If transition, but no guards fulfilled => null, else 
      ? null
-     : nextEventMap[cs] === null 
+     : nextEventMap[cs] == null
        ? computed.outputs
     // Run automatic transition if any
        : computed.outputs.concat(process({[nextEventMap[cs]]: eventData}))

@@ -1,4 +1,19 @@
-var nextEventMap = { n1ღA: null, "n2ღGroup 1": "init", "n2::n0ღB": null, "n2::n2ღC": null };
+// Copy-paste help
+// For debugging purposes, guards and actions functions should all have a name
+// Using natural language sentences for labels in the graph is valid
+// guard and action functions name still follow JavaScript rules though
+// -----Guards------
+// const guards = {
+//   "isNumber": function (){},
+//   "not(isNumber)": function (){},
+// };
+// -----Actions------
+// const actions = {
+//   "logAtoB": function (){},
+//   "logAtoC": function (){},
+// };
+// ----------------
+var nextEventMap = { "n2ღGroup 1": "init" };
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -7,9 +22,13 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var stateAncestors = { "n2::n0ღB": ["n2ღGroup 1"], "n2::n2ღC": ["n2ღGroup 1"] };
+  var parentMap = { "n2::n0ღB": "n2ღGroup 1", "n2::n2ღC": "n2ღGroup 1" };
   var cs = "nok";
   var es = initialExtendedState;
+
+  function getAncestors(cs) {
+    return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
+  }
 
   var eventHandlers = {
     nok: {
@@ -44,11 +63,10 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   };
-
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
-    var controlStateHandlingEvent = [cs].concat(stateAncestors[cs] || []).find(function (controlState) {
+    var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
 
@@ -60,7 +78,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           null
-        : nextEventMap[cs] === null
+        : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

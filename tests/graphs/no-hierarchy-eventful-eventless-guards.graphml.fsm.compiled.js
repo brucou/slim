@@ -1,4 +1,24 @@
-var nextEventMap = { n1ღA: null, n2ღTemp1: "", n3ღTemp2: "", n4ღDone: "" };
+// Copy-paste help
+// For debugging purposes, guards and actions functions should all have a name
+// Using natural language sentences for labels in the graph is valid
+// guard and action functions name still follow JavaScript rules though
+// -----Guards------
+// const guards = {
+//   "condition1": function (){},
+//   "condition2": function (){},
+//   "condition3": function (){},
+//   "shouldReturnToA": function (){},
+// };
+// -----Actions------
+// const actions = {
+//   "logAtoTemp1": function (){},
+//   "logAtoTemp2": function (){},
+//   "logAtoDone": function (){},
+//   "logTemp1toA": function (){},
+//   "logTemp2toA": function (){},
+// };
+// ----------------
+var nextEventMap = { n2ღTemp1: "", n3ღTemp2: "", n4ღDone: "" };
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -71,7 +91,6 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   };
-
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
@@ -85,7 +104,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           null
-        : nextEventMap[cs] === null
+        : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

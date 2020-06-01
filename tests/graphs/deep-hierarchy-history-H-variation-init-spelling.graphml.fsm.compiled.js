@@ -48,11 +48,13 @@ function createStateMachine(fsmDefForCompile, stg) {
     "n2::n2ღGroup 1": "n2ღGroup 1",
     "n2::n2::n0ღD": "n2::n2ღGroup 1",
     "n2::n2::n2ღD": "n2::n2ღGroup 1",
+    "n2::n3ღInit": "n2ღGroup 1",
   };
   var cs = "nok";
   var es = initialExtendedState;
   var hs = {
     deep: {
+      n0ღINit: "",
       n1ღE: "",
       "n2ღGroup 1": "",
       "n2::n0ღB": "",
@@ -60,8 +62,10 @@ function createStateMachine(fsmDefForCompile, stg) {
       "n2::n2ღGroup 1": "",
       "n2::n2::n0ღD": "",
       "n2::n2::n2ღD": "",
+      "n2::n3ღInit": "",
     },
     shallow: {
+      n0ღINit: "",
       n1ღE: "",
       "n2ღGroup 1": "",
       "n2::n0ღB": "",
@@ -69,6 +73,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       "n2::n2ღGroup 1": "",
       "n2::n2::n0ღD": "",
       "n2::n2::n2ღD": "",
+      "n2::n3ღInit": "",
     },
   };
 
@@ -190,6 +195,4 @@ function createStateMachine(fsmDefForCompile, stg) {
   return process;
 }
 
-module.exports = {
-  createStateMachine,
-};
+export { createStateMachine };

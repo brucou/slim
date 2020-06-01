@@ -1,15 +1,34 @@
+// Copy-paste help
+// For debugging purposes, guards and actions functions should all have a name
+// Using natural language sentences for labels in the graph is valid
+// guard and action functions name still follow JavaScript rules though
+// -----Guards------
+// const guards = {
+//   "isNumber": function (){},
+//   "not(isNumber)": function (){},
+//   "shouldReturnToA": function (){},
+// };
+// -----Actions------
+// const actions = {
+//   "logAtoGroup1": function (){},
+//   "logGroup1toGroup2": function (){},
+//   "logGroup2toGroup3": function (){},
+//   "logGroup3BtoGroup4": function (){},
+//   "logGroup3toB": function (){},
+//   "logGroup3toC": function (){},
+//   "logAtoB": function (){},
+//   "logAtoC": function (){},
+//   "logBtoD": function (){},
+//   "logCtoD": function (){},
+//   "logDtoA": function (){},
+// };
+// ----------------
 var nextEventMap = {
-  n1ღA: null,
   "n2ღGroup 1": "init",
   "n2::n0ღB": "",
   "n2::n2ღGroup 2": "init",
   "n2::n2::n1ღGroup 3": "init",
-  "n2::n2::n1::n0ღB": null,
-  "n2::n2::n1::n2ღC": null,
   "n2::n2::n1::n3ღGroup 4": "init",
-  "n2::n2::n1::n3::n0ღA": null,
-  "n2::n2::n1::n3::n1ღB": null,
-  "n2::n2::n1::n3::n2ღC": null,
   "n2::n2::n1::n3::n3ღD": "",
 };
 
@@ -20,20 +39,24 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var stateAncestors = {
-    "n2::n0ღB": ["n2ღGroup 1"],
-    "n2::n2ღGroup 2": ["n2ღGroup 1"],
-    "n2::n2::n1ღGroup 3": ["n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n0ღB": ["n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n2ღC": ["n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n3ღGroup 4": ["n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n3::n0ღA": ["n2::n2::n1::n3ღGroup 4", "n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n3::n1ღB": ["n2::n2::n1::n3ღGroup 4", "n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n3::n2ღC": ["n2::n2::n1::n3ღGroup 4", "n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
-    "n2::n2::n1::n3::n3ღD": ["n2::n2::n1::n3ღGroup 4", "n2::n2::n1ღGroup 3", "n2::n2ღGroup 2", "n2ღGroup 1"],
+  var parentMap = {
+    "n2::n0ღB": "n2ღGroup 1",
+    "n2::n2ღGroup 2": "n2ღGroup 1",
+    "n2::n2::n1ღGroup 3": "n2::n2ღGroup 2",
+    "n2::n2::n1::n0ღB": "n2::n2::n1ღGroup 3",
+    "n2::n2::n1::n2ღC": "n2::n2::n1ღGroup 3",
+    "n2::n2::n1::n3ღGroup 4": "n2::n2::n1ღGroup 3",
+    "n2::n2::n1::n3::n0ღA": "n2::n2::n1::n3ღGroup 4",
+    "n2::n2::n1::n3::n1ღB": "n2::n2::n1::n3ღGroup 4",
+    "n2::n2::n1::n3::n2ღC": "n2::n2::n1::n3ღGroup 4",
+    "n2::n2::n1::n3::n3ღD": "n2::n2::n1::n3ღGroup 4",
   };
   var cs = "nok";
   var es = initialExtendedState;
+
+  function getAncestors(cs) {
+    return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
+  }
 
   var eventHandlers = {
     nok: {
@@ -159,11 +182,10 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   };
-
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
-    var controlStateHandlingEvent = [cs].concat(stateAncestors[cs] || []).find(function (controlState) {
+    var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
 
@@ -175,7 +197,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           null
-        : nextEventMap[cs] === null
+        : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

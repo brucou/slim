@@ -1,10 +1,26 @@
-var nextEventMap = { n1ღD: "", "n2ღGroup 1": "init", "n2::n0ღB": null, "n2::n1ღC": null, "n2::n2ღD": null };
+// Copy-paste help
+// For debugging purposes, guards and actions functions should all have a name
+// Using natural language sentences for labels in the graph is valid
+// guard and action functions name still follow JavaScript rules though
+// -----Guards------
+// const guards = {
+// };
+// -----Actions------
+// const actions = {
+//   "logDtoGroup1H*": function (){},
+//   "logBtoD": function (){},
+//   "logBtoC": function (){},
+//   "logCtoD": function (){},
+//   "logGroup1toC": function (){},
+// };
+// ----------------
+var nextEventMap = { n1ღD: "", "n2ღGroup 1": "init" };
 
-function updateHistoryState(history, stateAncestors, state_from_name) {
+function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === "nok") {
     return history;
   } else {
-    var ancestors = stateAncestors[state_from_name] || [];
+    var ancestors = getAncestors(state_from_name) || [];
     ancestors.reduce((oldAncestor, newAncestor) => {
       // set the exited state in the history of all ancestors
       history["deep"][newAncestor] = state_from_name;
@@ -24,7 +40,7 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var stateAncestors = { "n2::n0ღB": ["n2ღGroup 1"], "n2::n1ღC": ["n2ღGroup 1"], "n2::n2ღD": ["n2ღGroup 1"] };
+  var parentMap = { "n2::n0ღB": "n2ღGroup 1", "n2::n1ღC": "n2ღGroup 1", "n2::n2ღD": "n2ღGroup 1" };
   var cs = "nok";
   var es = initialExtendedState;
   var hs = {
@@ -32,11 +48,15 @@ function createStateMachine(fsmDefForCompile, stg) {
     shallow: { n1ღD: "", "n2ღGroup 1": "", "n2::n0ღB": "", "n2::n1ღC": "", "n2::n2ღD": "" },
   };
 
+  function getAncestors(cs) {
+    return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
+  }
+
   var eventHandlers = {
     "n2ღGroup 1": {
       event3: function (es, ed, stg) {
         cs = "n1ღD"; // No action, only cs changes!
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return { outputs: [], updates: [] };
       },
@@ -44,7 +64,7 @@ function createStateMachine(fsmDefForCompile, stg) {
         let computed = actions["logGroup1toC"](es, ed, stg);
         cs = "n2::n1ღC";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
@@ -54,7 +74,7 @@ function createStateMachine(fsmDefForCompile, stg) {
         let computed = actions["logDtoGroup1H*"](es, ed, stg);
         cs = hs["deep"]["n2ღGroup 1"];
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
@@ -62,7 +82,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     nok: {
       init: function (es, ed, stg) {
         cs = "n2::n0ღB"; // No action, only cs changes!
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return { outputs: [], updates: [] };
       },
@@ -72,7 +92,7 @@ function createStateMachine(fsmDefForCompile, stg) {
         let computed = actions["logBtoD"](es, ed, stg);
         cs = "n2::n2ღD";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
@@ -80,7 +100,7 @@ function createStateMachine(fsmDefForCompile, stg) {
         let computed = actions["logBtoC"](es, ed, stg);
         cs = "n2::n1ღC";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
@@ -90,17 +110,16 @@ function createStateMachine(fsmDefForCompile, stg) {
         let computed = actions["logCtoD"](es, ed, stg);
         cs = "n2::n2ღD";
         es = updateState(es, computed.updates);
-        hs = updateHistoryState(hs, stateAncestors, cs);
+        hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
   };
-
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
-    var controlStateHandlingEvent = [cs].concat(stateAncestors[cs] || []).find(function (controlState) {
+    var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
 
@@ -112,7 +131,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           null
-        : nextEventMap[cs] === null
+        : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

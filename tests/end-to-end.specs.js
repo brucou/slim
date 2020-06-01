@@ -1009,4 +1009,91 @@ describe('End-to-end graphml to kingly', function() {
     });
   });
 
+  describe('deep_hierarchy_history_H_variation_init_spelling', function() {
+    // Should be exactly the same as the hierarchy_history_H case
+    // run the script on the test file
+    const graphMlFile = './graphs/deep-hierarchy-history-H-variation-init-spelling.graphml';
+    try {
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
+    }
+    catch (err) {
+      assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
+    }
+
+    // require the js file
+    const { createStateMachine } = require(`${graphMlFile}.fsm.compiled.cjs`);
+
+    // Build the machine
+    const eventSpace = [event1, event2, event3];
+    const guards = {};
+    const actionFactories = {
+      logGroup1toC: (s, e, stg) => traceTransition('Group1 -> C'),
+      logGroup1toD: (s, e, stg) => traceTransition('Group1 -> D'),
+      logGroup1toE: (s, e, stg) => traceTransition('Group1 -> E'),
+      logBtoC: (s, e, stg) => traceTransition('B -> C'),
+      logBtoD: (s, e, stg) => traceTransition('B -> D'),
+      logCtoD: (s, e, stg) => traceTransition('C -> D'),
+      logDtoD: (s, e, stg) => traceTransition('D -> D'),
+      logGroup1toH: (s, e, stg) => traceTransition('Group1 -> Group1H'),
+    };
+
+    // Two machines to test the guard and achieve all-transition coverage
+    const fsmDef1 = {
+      updateState,
+      initialExtendedState: {},
+      actionFactories,
+      guards
+    };
+    const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
+    const cases = inputSpace.map(scenario => {
+      return [eventSpace[scenario[0]], eventSpace[scenario[1]], eventSpace[scenario[2]]];
+    });
+    const outputs1 = cases.map(scenario => {
+      const fsm1 = createStateMachine(fsmDef1, settings);
+      return scenario.map(fsm1);
+    });
+    const expected1 = [
+      // [event1, event1, event1]
+      [['B -> D'], ['D -> D'], null],
+      [['B -> D'], ['D -> D'], null],
+      [['B -> D'], ['D -> D'], ['Group1 -> Group1H', 'Group1 -> D']],
+      // [event1, event2, event1]
+      [['B -> D'], null, ['D -> D']],
+      [['B -> D'], null, null],
+      [['B -> D'], null, ['Group1 -> Group1H', 'Group1 -> D']],
+      // [event1, event3, event1]
+      [['B -> D'], ['Group1 -> Group1H', 'Group1 -> D'], null],
+      [['B -> D'], ['Group1 -> Group1H', 'Group1 -> D'], null],
+      [['B -> D'], ['Group1 -> Group1H', 'Group1 -> D'], ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event2, event1, event1]
+      [['B -> C', 'C -> D'], null, null],
+      [['B -> C', 'C -> D'], null, null],
+      [['B -> C', 'C -> D'], null, ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event2, event2, event1]
+      [['B -> C', 'C -> D'], null, null],
+      [['B -> C', 'C -> D'], null, null],
+      [['B -> C', 'C -> D'], null, ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event2, event3, event1]
+      [['B -> C', 'C -> D'], ['Group1 -> Group1H', 'Group1 -> D'], null],
+      [['B -> C', 'C -> D'], ['Group1 -> Group1H', 'Group1 -> D'], null],
+      [['B -> C', 'C -> D'], ['Group1 -> Group1H', 'Group1 -> D'], ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event3, event1, event1]
+      [['Group1 -> Group1H'], ['B -> D'], ['D -> D']],
+      [['Group1 -> Group1H'], ['B -> D'], null],
+      [['Group1 -> Group1H'], ['B -> D'], ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event3, event2, event1]
+      [['Group1 -> Group1H'], ['B -> C', 'C -> D'], null],
+      [['Group1 -> Group1H'], ['B -> C', 'C -> D'], null],
+      [['Group1 -> Group1H'], ['B -> C', 'C -> D'], ['Group1 -> Group1H', 'Group1 -> D']],
+      // // [event3, event3, event1]
+      [['Group1 -> Group1H'], ['Group1 -> Group1H'], ['B -> D']],
+      [['Group1 -> Group1H'], ['Group1 -> Group1H'], ['B -> C', 'C -> D']],
+      [['Group1 -> Group1H'], ['Group1 -> Group1H'], ['Group1 -> Group1H']],
+    ];
+
+    it('runs the machine as per the graph', function() {
+      assert.deepEqual(outputs1, expected1, `Branch machine initialized with number ok`);
+    });
+  });
+
 });

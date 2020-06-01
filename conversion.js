@@ -20,6 +20,7 @@ const {
   markFunctionStr,
   markFunctionNoop,
   markGuardNoop,
+  trimInside,
 } = require('./helpers');
 const {DEFAULT_ACTION_FACTORY_STR, SEP, YED_ENTRY_STATE} = require('./properties');
 
@@ -30,6 +31,7 @@ const getYedEdgeLabel = edgeML => {
   const d10Record = data.find(d => d['@_key'] === 'd10');
   return view(lensPath(['y:PolyLineEdge', 'y:EdgeLabel', '#text']), d10Record);
 };
+// DOC: we remove \n and \r and extra spaces from the labels
 const getLabel = (graphObj) => {
   const graphData = graphObj.data;
   const yedNodeId = graphObj['@_id'];
@@ -37,6 +39,7 @@ const getLabel = (graphObj) => {
     ? find(keyRow => keyRow ['@_key'] === 'd6', graphData)
     : graphData['@_key'] === 'd6' ? graphData : null
 
+  // if (typeof d6Key === 'undefined') console.warn(`getLabel > [yedNodeId, ""]`, [yedNodeId, ""])
   if (typeof d6Key === 'undefined') return [yedNodeId, ""]
 
   if (isCompoundState(graphObj)) {
@@ -45,11 +48,17 @@ const getLabel = (graphObj) => {
     const groupNode = find(row => {
       return view(lensPath(['y:State', '@_closed']), row) === 'false'
     }, groupNodes);
-    const groupName = view(lensPath(['y:NodeLabel', '#text']), groupNode);
+    // This may have \n and other printable characters
+    const _groupName = view(lensPath(['y:NodeLabel', '#text']), groupNode);
+    const groupName = _groupName&& trimInside(_groupName) || "";
+    // console.warn(`getLabel > isCompoundState [yedNodeId, groupName]`, [yedNodeId, groupName])
     return [yedNodeId, groupName]
   }
   else {
-    const atomicStateName = view(lensPath(['y:ShapeNode', 'y:NodeLabel', '#text']), graphData)
+    const _atomicStateName = view(lensPath(['y:ShapeNode', 'y:NodeLabel', '#text']), graphData) || view(lensPath(['y:GenericNode', 'y:NodeLabel', '#text']), graphData);
+    // This may have \n and other printable characters
+    const atomicStateName = _atomicStateName && trimInside(_atomicStateName) || "";
+    // console.warn(`getLabel > not(isCompoundState [yedNodeId, atomicStateName])`, [yedNodeId, atomicStateName], d6Key)
     return [yedNodeId, atomicStateName]
   }
 };
@@ -69,6 +78,7 @@ const constructStateHierarchy = (label, children) => {
       : {[_label]: mergeAll(children)};
 };
 const constructStateYed2KinglyMap = (label, children) => {
+  // console.warn(`constructStateYed2KinglyMap > label`, label)
   const [yedLabel, stateLabel] = label;
   const newMap = yedLabel === void 0 ? {} : {[label[0]]: label[1]};
 
@@ -87,11 +97,12 @@ const stateYed2KinglyLens = {
 
 // NTH: implement rules
 // Only ever one [x]
-function parseYedLabel(yedEdgeLabel) {
-  if (yedEdgeLabel && yedEdgeLabel.split('/').length > 2){
-    throw `parseYedLabel > You used ${yedEdgeLabel} as edge label. There can only be one / to avoid misunderstandings.`
-  }
-
+function parseYedLabel(_yedEdgeLabel) {
+  const yedEdgeLabel = _yedEdgeLabel && trimInside(_yedEdgeLabel) || "";
+  //TODO
+  // if (yedEdgeLabel && yedEdgeLabel.split('/elm s').length > 2){
+  //   throw `parseYedLabel > You used ${yedEdgeLabel} as edge label. There can only be one / to avoid misunderstandings.`
+  // }
   // Label as in yEd i.e. `x [y] / z` string, with x, y, z all optionals
   // Also: z is a string representing a function, but not a function
   const yedEdgeLabelRegExp = /\[(.*)\]/;
@@ -128,7 +139,8 @@ function parseYedLabel(yedEdgeLabel) {
   return {actionFactory, event, guard}
 }
 
-function aggregateEdgesPerFromEventKey({edges: hashMap, events}, yedEdge) {
+function aggregateEdgesPerFromEventKey(acc, yedEdge) {
+  const {edges: hashMap, events} = acc;
   const from = view(lensPath(['@_source']), yedEdge).trim();
   const to = view(lensPath(['@_target']), yedEdge).trim();
   const yedEdgeLabel = getYedEdgeLabel(yedEdge);
@@ -224,6 +236,7 @@ function computeKinglyTransitionsFactory(stateYed2KinglyMap, edges, injected) {
       // Example:
       // yedFrom: "n0::n0" ; userFrom: "entered by user" ; _from: "n0::n0[symbol]entered by user"
       const [yedFrom, _event] = fromEventKey.split(SEP);
+      // console.warn(`forEachObjIndexed> [yedFrom, _event]`, [yedFrom, _event])
       const _from = yedState2KinglyState(stateYed2KinglyMap, yedFrom);
       const userFrom = stateYed2KinglyMap[yedFrom];
       let from = _from;
@@ -231,6 +244,7 @@ function computeKinglyTransitionsFactory(stateYed2KinglyMap, edges, injected) {
 
       // Case: init transition
       if (isInitialTransition(yedFrom, userFrom)) {
+        // console.warn(`isInitialTransition`, yedFrom, userFrom)
         // rule <- No event allowed on initial states
         // Not an unrecoverable error, as the event will be ignored
         if (event.trim()){
@@ -238,6 +252,7 @@ function computeKinglyTransitionsFactory(stateYed2KinglyMap, edges, injected) {
         }
         //   Case: top-level init transition
         if (isTopLevelInitTransition(yedFrom, userFrom)) {
+          // console.warn(`isTopLevelInitTransition`, yedFrom, userFrom)
           from = INIT_STATE;
           event = INIT_EVENT;
         } else {
@@ -303,6 +318,8 @@ function computeTransitionsAndStatesFromXmlString(yedString) {
   const stateHierarchy = mapOverTree(stateHierarchyLens, x => x, graphObj)[SEP];
   const stateYed2KinglyMap = mapOverTree(stateYed2KinglyLens, x => x, graphObj);
   const yedEdges = graphObj.graph.edge;
+  console.warn(`stateHierarchy\n`, stateHierarchy)
+  console.warn(`stateYed2KinglyMap\n`, stateYed2KinglyMap)
 
   // Kingly only admits one transition record per (from, event) couple
   // Additionally, when there is no guard to check, a simplified transition format can be used

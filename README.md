@@ -69,13 +69,15 @@ Note also that, as much as possible, we refrain from using advanced JavaScript l
 
 ## Rules
 Some definitions:  
- - An initial transition is that which originates from a node whose label is `init`  
+ - An initial transition is that which originates from a node whose label is `init` or any capitalized variations (such as `Init`, `INit`, `iniT`, etc.)
  - A top-level initial transition is that initial transition which does not have any parent node  
- - A history pseudo-state is a node whose label is H (shallow history) or H* (deep history)  
+ - A history pseudo-state is a node whose label is `H` (shallow history) or `H*` (deep history) with this same capitalization  
  - A compound node is a node which is created in the yEd interface by using the group functionality (*Grouping > Group* or *Ctrl-Alt-G* in version 3.19).  
 
 - `slim` rules:  
-  - The compiler converts the `.graphml` file using the same algorithm than `yed2Kingly`. As such the same conversion rules that apply: the machine encoded in the `.graphml` file must correspond to a valid Kingly machine.  
+  - The compiler converts the `.graphml` file using the same algorithm than `yed2Kingly`. As such the same conversion rules that apply: the machine encoded in the `.graphml` file must correspond to a valid Kingly machine.
+  - no control state, i.e. no node in the yEd graph can have an `init`-like label if that control state is not an initial transition.
+  - the previous rule applies indentically for control states which are not pseudo-control states. They cannot be labelled a `H` or `H*`. Be careful that `h` will not be considered to be a pseudo control state, but a regular control state.
 
 # Size of file generated
 There are plenty of graph examples in the [test directory](https://github.com/brucou/slim/tree/master/tests/graphs). 
@@ -194,13 +196,15 @@ export { createStateMachine };
 
 with a minified compressed size of 660 bytes. 
 
-Assuming 30 bytes per transitions (computed from those two data points), with a base line of 500 bytes, to reach 5KB we need a machine with 150 transitions!!
-
 The following complex wizard form was [implemented](https://github.com/brucou/cycle-state-machine-demo) with a machine having around 25 transitions: 
 
 ![subscription wizard form modelization](https://github.com/brucou/cycle-state-machine-demo/raw/master/public/assets/images/graphs/sparks%20application%20process%20with%20comeback%20proper%20syntax%20-%20flat%20fsm.png)
 
-In summary, endowed with the present compiler, **Kingly proposes state machines as a zero-cost abstraction**.
+The first implementation of the [Conduit average-sized application](https://rw-kingly-svelte.bricoi1.now.sh/#/) has ~50 states, ~100 transitions and weighted 3.3KB min.gzipped.
+
+Those preliminary results are fairly consistent. Assuming 30 bytes per transitions (computed from the previous data points), with a base line of 500 bytes, to reach 5KB we need a machine with 150 transitions!! Note that this size does not (and cannot) include the actions and guards but does represent the size of the logic encoded in the machine.
+
+In summary, endowed with the present compiler, **Kingly proposes state machines as a zero-cost abstraction**. This means that if you would have written that logic by hand, you would not have been able to achieve a significantly improved min.gzipped size.
 
 # Tests
 Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](https://github.com/brucou/slim/tree/master/tests) and run:  
@@ -208,6 +212,9 @@ Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](
 ```bash
 mocha *specs*
 ``` 
+
+# Known limitations
+The `.graphml` format for yEd is not publicly documented. The parser for it thus may have holes or may break if the format specifications change, It is thus important that you log issues if you encounter any errors wile running the compiler.
 
 # Final note
 After using and working with state machine for the past four years, I believe I am reaching a satisfying API and process. The idea is really to avoid unnecessary complexity. I am however interested in hearing your comments, and suggestions together with use cases that you believe are not satisfactorily addressed -> post an issue in the project directory.  

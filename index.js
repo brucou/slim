@@ -1,19 +1,12 @@
 module.exports = function slim(argv) {
   const { Try, TryModule, Success, Failure, None, Some, Left, Right } = require('funfix');
-  const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, NO_OUTPUT, NO_STATE_UPDATE, fsmContracts, INIT_EVENT, INIT_STATE } = require('kingly');
-  const ejs = require('ejs');
-  const { concat } = require('ramda');
+  const { initHistoryDataStructure, computeHistoryMaps, ACTION_IDENTITY, INIT_EVENT, INIT_STATE } = require('kingly');
   const { templateIntro, transitionWithoutGuard, mainLoop, cjsExports, esmExports } = require('./templates');
-// This one is from jest and is terrific to format object nicely
-// but we used JSON.stringify in the end as we need JS-legit formatting here
-// Kept here because I never remember the name of the module
-// const prettyFormat = require('pretty-format');
-  const prettier = require('prettier');
+  const prettier = require('prettier'); // From jest: terrific to format object nicely
   const fs = require('fs');
   const { Command } = require('commander');
   const { computeTransitionsAndStatesFromXmlString } = require('./conversion');
-  const { checkKinglyContracts, resolve } = require('./helpers');
-  const { DEFAULT_ACTION_FACTORY_STR } = require('./properties');
+  const { checkKinglyContracts, resolve, computeParentMapFromHistoryMaps, getCommentsHeader } = require('./helpers');
   const program = new Command();
 
 // Configure syntax, parse and run
@@ -61,6 +54,7 @@ module.exports = function slim(argv) {
           const historyMaps = computeHistoryMaps(states);
           const initialHistoryState = initHistoryDataStructure(historyMaps.stateList);
           const stateAncestors = historyMaps.stateAncestors;
+          const parentMap = computeParentMapFromHistoryMaps(historyMaps);
           const transitions = transitionsWithoutGuardsActions;
           const transitionsPerOrigin = transitions.reduce((acc, transition) => {
             const { from, event } = transition;
@@ -84,7 +78,12 @@ module.exports = function slim(argv) {
             return acc;
           }, {});
           const nextEventMap = historyMaps.stateList.reduce((acc, state) => {
-            acc[state] = isStateWithEventlessTransition[state] ? '' : isCompoundControlState[state] ? INIT_EVENT : null;
+            if (isStateWithEventlessTransition[state]) {
+              acc[state] = '';
+            }
+            else if (isCompoundControlState[state]) {
+              acc[state] = INIT_EVENT;
+            }
             return acc;
           }, {});
           const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
@@ -98,26 +97,32 @@ module.exports = function slim(argv) {
           // being false means that there is none such event
           const hasAutomaticEvents = usesHistoryStates || Object.keys(nextEventMap).some(state => nextEventMap[state] != null);
 
+          // Start the compiled file with the shape of actions and guards
+          // to pass to the `createStateMachine` factory function
+          const commentsHeader = getCommentsHeader(transitionsWithoutGuardsActions);
+
           const compiledContents = [
+            commentsHeader,
             templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
             `function createStateMachine(fsmDefForCompile, stg) {`,
             `var actions = fsmDefForCompile.actionFactories;`,
-            // `actions["ACTION_IDENTITY"] = function(){return {updates:[], outputs:${JSON.stringify(NO_OUTPUT)}}}`,
             `var guards = fsmDefForCompile.guards;`,
             `var updateState = fsmDefForCompile.updateState;`,
-            // `var initialControlState = INIT_STATE`,
             `var initialExtendedState = fsmDefForCompile.initialExtendedState;`,
             ``,
 
             Object.keys(stateAncestors).length === 0 ? `
             // Initialize machine state,
-            `.trim(): `
+            `.trim() : `
             // Initialize machine state,
-            var stateAncestors = ${JSON.stringify(stateAncestors)};
+            var parentMap = ${JSON.stringify(parentMap)};
             `.trim(),
             `var cs = ${JSON.stringify(INIT_STATE)};`,
             `var es = initialExtendedState;`,
             usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,
+            Object.keys(stateAncestors).length !== 0 ? `
+            function getAncestors(cs) {return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : []} ;
+            ` : '',
             `var eventHandlers = {`,
             Object.keys(transitionsPerOrigin).reduce((str, from) => {
               return str + [
@@ -147,7 +152,7 @@ module.exports = function slim(argv) {
                         }).join('\n'),
                         `if (computed !== null) {
                       es = updateState(es, computed.updates);`,
-                        usesHistoryStates && `hs = updateHistoryState(hs, stateAncestors, cs);` || '',
+                        usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs);` || '',
                         `                  }
                         
                     return computed
@@ -161,8 +166,7 @@ module.exports = function slim(argv) {
             }, ''),
             // End event handler : {
             `}`,
-            ``,
-            // NOw the main function
+            // Now the main function
             mainLoop(nextEventMap, hasAutomaticEvents, stateAncestors),
             `}`,
           ].join('\n ').trim();
@@ -172,6 +176,7 @@ module.exports = function slim(argv) {
           .flatMap(compiledContents => Try.of(() => {
               // Write the esm output file
               const esmContents = [compiledContents, esmExports].join('\n\n');
+              console.warn(`esmContents`, esmContents);
               const prettyEsmFileContents = prettier.format(esmContents, { semi: true, parser: 'babel', printWidth: 120 });
               fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents);
               // Write the cjs output file

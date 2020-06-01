@@ -1,21 +1,25 @@
 const parser = require('fast-xml-parser');
-const {YED_DEEP_HISTORY_STATE, YED_SHALLOW_HISTORY_STATE, YED_ENTRY_STATE, SEP, DEFAULT_ACTION_FACTORY_STR,DEFAULT_ACTION_FACTORY} = require('./properties');
-const {historyState, SHALLOW, DEEP, fsmContracts, createStateMachine} = require("kingly");
+const { YED_DEEP_HISTORY_STATE, YED_SHALLOW_HISTORY_STATE, YED_ENTRY_STATE, SEP, DEFAULT_ACTION_FACTORY_STR, DEFAULT_ACTION_FACTORY } = require('./properties');
+const { historyState, SHALLOW, DEEP, fsmContracts, createStateMachine } = require('kingly');
 const { mapOverObj } = require('fp-rosetree');
 
-function T() { return true}
+function T() {
+  return true;
+}
 
 // Error handling
 function tryCatchFactory(errors) {
   // @side-effect: we modify errors in place
   return function tryCatch(fn, errCb) {
     return function tryCatch(...args) {
-      try {return fn.apply(fn, args);}
+      try {
+        return fn.apply(fn, args);
+      }
       catch (e) {
         return errCb(e, errors, args);
       }
     };
-  }
+  };
 }
 
 class Yed2KinglyConversionError extends Error {
@@ -27,7 +31,7 @@ class Yed2KinglyConversionError extends Error {
       const fm = `At ${location}: ${when} => ${message}`;
       console.info(fm, info);
       console.error(m);
-      return fm
+      return fm;
     }).concat([`See extra info in console`]).join('\n');
   }
 }
@@ -39,15 +43,15 @@ function handleAggregateEdgesPerFromEventKeyErrors(e, errors, [hashMap, yedEdge]
     info: { hashMap: JSON.parse(JSON.stringify(hashMap)), yedEdge },
     message: e.message,
     possibleCauses: [
-      `File is not a valid graphML file`,
       `File is not a valid yed-generated graphML file`,
+      `File is valid yed-generated graphML file but fails syntactic rules (cf. docs)`,
       `You found a bug in yed2Kindly converter`,
       // `You found a bug in fast-xml=parser (unlikely)`,
     ],
-    original: e
+    original: e,
   });
 
-  return {}
+  return {};
 }
 
 function handleParseGraphMlStringErrors(e, errors, [yedString]) {
@@ -64,49 +68,50 @@ function handleParseGraphMlStringErrors(e, errors, [yedString]) {
         // `You found a bug in yed2Kindly converter (maybe)`,
       ],
       message: e.message,
-      original: e
-    }
+      original: e,
+    },
   );
 
-  return {}
+  return {};
 }
 
 // Predicates
 function isCompoundState(graphObj) {
-  return graphObj['@_yfiles.foldertype'] === 'group'
+  return graphObj['@_yfiles.foldertype'] === 'group';
 }
 
 function isGraphRoot(graphObj) {
-  return 'key' in graphObj
+  return 'key' in graphObj;
 }
 
+// DOC: init, Init, INIT: all work
 function isInitialTransition(yedFrom, userFrom) {
-  return userFrom === YED_ENTRY_STATE
+  return userFrom.toUpperCase() === YED_ENTRY_STATE.toUpperCase();
 }
 
 function isTopLevelInitTransition(yedFrom, userFrom) {
   // yEd internal naming is nX::Ny::... so a top-level node will be just nX
-  return isInitialTransition(yedFrom, userFrom) && yedFrom.split('::').length === 1
+  return isInitialTransition(yedFrom, userFrom) && yedFrom.split('::').length === 1;
 }
 
 function isHistoryDestinationState(stateYed2KinglyMap, yedTo) {
   const x = stateYed2KinglyMap[yedTo].trim();
-  return x === YED_SHALLOW_HISTORY_STATE || x === YED_DEEP_HISTORY_STATE
+  return x === YED_SHALLOW_HISTORY_STATE || x === YED_DEEP_HISTORY_STATE;
 }
 
 function isDeepHistoryDestinationState(stateYed2KinglyMap, yedTo) {
   const x = stateYed2KinglyMap[yedTo].trim();
-  return isHistoryDestinationState(stateYed2KinglyMap, yedTo) && x === YED_DEEP_HISTORY_STATE
+  return isHistoryDestinationState(stateYed2KinglyMap, yedTo) && x === YED_DEEP_HISTORY_STATE;
 }
 
 // Conversion helpers
 // iff no predicate, and only one transition in array
 function isSimplifiableSyntax(arrGuardsTargetActions) {
-  return arrGuardsTargetActions.length === 1 && !arrGuardsTargetActions[0].predicate
+  return arrGuardsTargetActions.length === 1 && !arrGuardsTargetActions[0].predicate;
 }
 
 function getYedParentNode(yedFrom) {
-  return yedFrom.split('::').slice(0, -1).join('::')
+  return yedFrom.split('::').slice(0, -1).join('::');
 }
 
 function yedState2KinglyState(stateYed2KinglyMap, yedState) {
@@ -117,7 +122,7 @@ function computeKinglyDestinationState(stateYed2KinglyMap, yedTo) {
   if (isHistoryDestinationState(stateYed2KinglyMap, yedTo)) {
     return isDeepHistoryDestinationState(stateYed2KinglyMap, yedTo)
       ? historyState(DEEP, yedState2KinglyState(stateYed2KinglyMap, getYedParentNode(yedTo)))
-      : historyState(SHALLOW, yedState2KinglyState(stateYed2KinglyMap, getYedParentNode(yedTo)))
+      : historyState(SHALLOW, yedState2KinglyState(stateYed2KinglyMap, getYedParentNode(yedTo)));
 
   }
   else {
@@ -128,28 +133,28 @@ function computeKinglyDestinationState(stateYed2KinglyMap, yedTo) {
 function mapActionFactoryStrToActionFactoryFn(actionFactories, actionFactoryStr) {
   return actionFactoryStr === DEFAULT_ACTION_FACTORY_STR
     ? DEFAULT_ACTION_FACTORY
-    : actionFactories[actionFactoryStr]
+    : actionFactories[actionFactoryStr];
 }
 
 function mapGuardStrToGuardFn(guards, predicateStr) {
-  return guards[predicateStr] || T
+  return guards[predicateStr] || T;
 }
 
-function markFunctionStr(_, str){
-  return ["", "", "", str, "", "", ""].join(SEP)
+function markFunctionStr(_, str) {
+  return ['', '', '', str, '', '', ''].join(SEP);
 }
 
-function markFunctionNoop(_, str){
-  return () => ({outputs: [], updates: []})
+function markFunctionNoop(_, str) {
+  return () => ({ outputs: [], updates: [] });
 }
 
-function markGuardNoop(_, str){
-  return () => true
+function markGuardNoop(_, str) {
+  return () => true;
 }
 
-function contains(as, bs){
+function contains(as, bs) {
   // returns true if every a in as can be found in bs
-  return as.every(a => bs.indexOf(a) > -1)
+  return as.every(a => bs.indexOf(a) > -1);
 }
 
 // Parsing
@@ -165,21 +170,21 @@ function parseGraphMlString(yedString) {
   //   },
   // };
   const jsonObj = parser.parse(yedString, { ignoreAttributes: false }, true);
-  if (!jsonObj.graphml) throw `Not a graphml file? Could not find a <graphml> tag!`
+  if (!jsonObj.graphml) throw `Not a graphml file? Could not find a <graphml> tag!`;
 
-  return jsonObj
+  return jsonObj;
 }
 
 // Test helpers
 function isFunction(obj) {
-  return typeof obj === 'function'
+  return typeof obj === 'function';
 }
 
 function isPOJO(obj) {
   const proto = Object.prototype;
   const gpo = Object.getPrototypeOf;
 
-  if (obj === null || typeof obj !== "object") {
+  if (obj === null || typeof obj !== 'object') {
     return false;
   }
   return gpo(obj) === proto;
@@ -187,7 +192,7 @@ function isPOJO(obj) {
 
 function formatResult(result) {
   if (!isPOJO(result)) {
-    return result
+    return result;
   }
   else {
     return mapOverObj({
@@ -196,18 +201,23 @@ function formatResult(result) {
           ? (prop.name || prop.displayName || 'anonymous')
           : Array.isArray(prop)
             ? prop.map(formatResult)
-            : prop
+            : prop,
       },
-      result)
+      result);
   }
 }
 
 const fakeConsole = {
-  log: () => {},
-  error: () => {},
-  warn: () => {},
-  info: () => {},
-  debug: () => {},
+  log: () => {
+  },
+  error: () => {
+  },
+  warn: () => {
+  },
+  info: () => {
+  },
+  debug: () => {
+  },
 };
 
 function checkKinglyContracts(states, events, transitions) {
@@ -219,11 +229,11 @@ function checkKinglyContracts(states, events, transitions) {
       transitions,
       updateState: () => {
       },
-    }, {debug: {console: fakeConsole, checkContracts: fsmContracts}});
+    }, { debug: { console: fakeConsole, checkContracts: fsmContracts } });
   }
   catch (err) {
-    console.error(err)
-    return null
+    console.error(err);
+    return null;
   }
 }
 
@@ -253,6 +263,92 @@ function resolve(to) {
   return type ? `hs[${JSON.stringify(type)}][${JSON.stringify(to[type])}]` : JSON.stringify(to);
 }
 
+function trimInside(str) {
+  return str.replace(/\n/gm, ' ').replace(/\r/gm, ' ').replace(/\s+/g, " ");
+}
+
+function computeParentMapFromHistoryMaps(historyMaps){
+  const {stateList, stateAncestors} = historyMaps;
+  // Example of stateAncestors
+  // var stateAncestors = {
+  //   "n2::n0ღHome route": ["n2ღApplication core"],
+  //   "n2::n0::n0ღFeeds": ["n2::n0ღHome route", "n2ღApplication core"],
+  //   "n2::n0::n0::n0ღFetching global feed": ["n2::n0::n0ღFeeds", "n2::n0ღHome route", "n2ღApplication core"],
+  //   "n2::n5::n3ღChecking user": ["n2::n5ღArticle route", "n2ღApplication core"],
+  //   "n2::n5::n4ღcan (un)like": ["n2::n5ღArticle route", "n2ღApplication core"],
+  //   "n2::n5::n5ღcan (un)follow": ["n2::n5ღArticle route", "n2ღApplication core"],
+  // };
+  const css = Object.keys(stateAncestors);
+  if (css.length === 0) return {}
+  else {
+    // First add the parents that we already have identified in the stateAncestors map
+    let parentMap = css.reduce((acc, cs) => {
+      const ancestors = stateAncestors[cs];
+      acc[cs] = ancestors[0];
+      return acc
+    }, {});
+    return parentMap
+  }
+};
+
+function           getCommentsHeader(transitionsWithoutGuardsActions){
+  // Stringify the transitions without guards and actions (we just have the names of such)
+  // to hold the guards and actions
+  let predicateList = new Set();
+  let actionList = new Set();
+  transitionsWithoutGuardsActions.map(transitionRecord => {
+    if (transitionRecord.guards) {
+      const {from, event, guards} = transitionRecord;
+      return `
+           { from: "${from}", event: "${event}", guards: [
+           ${guards.map(guardRecord => {
+        const {predicate, to, action} = guardRecord;
+        const predicateStr = predicate.slice(3, -3);
+        const actionStr = action.slice(3, -3);
+        predicateList.add(predicateStr);
+        actionList.add(actionStr);
+        // actionList.push(actionStr);
+
+        return `
+          {predicate: guards["${predicateStr}"], to: ${JSON.stringify(to)}, action: aF["${actionStr}"]}, 
+          `.trim()
+      }).join("\n")
+        }
+      ]}
+        `.trim().concat(", ")
+    }
+    else {
+      const {from, event, to, action} = transitionRecord;
+      const actionStr = action.slice(3, -3);
+      actionList.add(actionStr);
+
+      return `
+          { from: "${from}", event: "${event}", to: ${JSON.stringify(to)}, action: aF["${actionStr}"] } 
+        `.trim().concat(", ")
+    }
+  }).join("\n");
+
+  return  `
+      // Copy-paste help
+      // For debugging purposes, guards and actions functions should all have a name
+      // Using natural language sentences for labels in the graph is valid
+      // guard and action functions name still follow JavaScript rules though
+      // -----Guards------
+      // const guards = {${Array.from(predicateList)
+    .map(pred => `\n//   "${pred}": function (){},`)
+    .join("")}
+      // };
+      // -----Actions------
+      // const actions = {${Array.from(actionList)
+    .map(action => action !== DEFAULT_ACTION_FACTORY_STR
+      ? `\n//   "${action}": function (){},`
+      : "")
+    .join("")}
+      // };
+      // ----------------
+      `.trim();
+}
+
 module.exports = {
   T,
   tryCatchFactory,
@@ -278,5 +374,9 @@ module.exports = {
   checkKinglyContracts,
   fakeConsole,
   contains,
-  resolve
-}
+  resolve,
+  trimInside,
+  computeParentMapFromHistoryMaps,
+  getCommentsHeader,
+};
+
