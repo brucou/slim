@@ -214,7 +214,7 @@ mocha *specs*
 ``` 
 
 # Known limitations
-The `.graphml` format for yEd is not publicly documented. The parser for it thus may have holes or may break if the format specifications change, It is thus important that you log issues if you encounter any errors wile running the compiler.
+The `.graphml` format for yEd is not publicly documented. The parser for it thus may have holes or may break if the format specifications change, It is thus important that you log issues if you encounter any errors wile running the compiler. To be fair, the specifications have not changed in many years.
 
 # Final note
 After using and working with state machine for the past four years, I believe I am reaching a satisfying API and process. The idea is really to avoid unnecessary complexity. I am however interested in hearing your comments, and suggestions together with use cases that you believe are not satisfactorily addressed -> post an issue in the project directory.  
