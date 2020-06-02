@@ -1,3 +1,5 @@
+// Generated automatically by Kingly, version 0.7
+// http://github.com/brucou/Kingly
 // Copy-paste help
 // For debugging purposes, guards and actions functions should all have a name
 // Using natural language sentences for labels in the graph is valid

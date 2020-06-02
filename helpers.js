@@ -349,6 +349,10 @@ function           getCommentsHeader(transitionsWithoutGuardsActions){
       `.trim();
 }
 
+const frontHeader = `
+// Generated automatically by Kingly, version 0.7
+// http://github.com/brucou/Kingly
+`.trim()
 module.exports = {
   T,
   tryCatchFactory,
@@ -378,5 +382,6 @@ module.exports = {
   trimInside,
   computeParentMapFromHistoryMaps,
   getCommentsHeader,
+  frontHeader,
 };
 

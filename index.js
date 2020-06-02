@@ -6,7 +6,7 @@ module.exports = function slim(argv) {
   const fs = require('fs');
   const { Command } = require('commander');
   const { computeTransitionsAndStatesFromXmlString } = require('./conversion');
-  const { checkKinglyContracts, resolve, computeParentMapFromHistoryMaps, getCommentsHeader } = require('./helpers');
+  const { checkKinglyContracts, resolve, computeParentMapFromHistoryMaps, getCommentsHeader, frontHeader } = require('./helpers');
   const program = new Command();
 
 // Configure syntax, parse and run
@@ -102,6 +102,7 @@ module.exports = function slim(argv) {
           const commentsHeader = getCommentsHeader(transitionsWithoutGuardsActions);
 
           const compiledContents = [
+            frontHeader,
             commentsHeader,
             templateIntro(usesHistoryStates, hasAutomaticEvents, nextEventMap),
             `function createStateMachine(fsmDefForCompile, stg) {`,
@@ -176,7 +177,6 @@ module.exports = function slim(argv) {
           .flatMap(compiledContents => Try.of(() => {
               // Write the esm output file
               const esmContents = [compiledContents, esmExports].join('\n\n');
-              console.warn(`esmContents`, esmContents);
               const prettyEsmFileContents = prettier.format(esmContents, { semi: true, parser: 'babel', printWidth: 120 });
               fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents);
               // Write the cjs output file

@@ -11,6 +11,7 @@
     "assert-diff": "^3.0.0",
     "chai": "^4.2.0",
     "mocha": "^7.1.1",
+    "nearley": "^2.19.3",
     "pretty-format": "^26.0.0"
   },
   "dependencies": {

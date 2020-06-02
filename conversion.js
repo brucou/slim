@@ -1,6 +1,8 @@
 const {INIT_STATE, INIT_EVENT} = require('kingly');
 const {mapOverTree} = require('fp-rosetree');
 const {lensPath, view, mergeAll, concat, forEachObjIndexed, find} = require('ramda');
+const nearley = require("nearley");
+const yedEdgeLabelGrammar = require("./yedEdgeLabelGrammar.js");
 const {
   handleAggregateEdgesPerFromEventKeyErrors,
   T,
@@ -98,45 +100,25 @@ const stateYed2KinglyLens = {
 // NTH: implement rules
 // Only ever one [x]
 function parseYedLabel(_yedEdgeLabel) {
-  const yedEdgeLabel = _yedEdgeLabel && trimInside(_yedEdgeLabel) || "";
-  //TODO
-  // if (yedEdgeLabel && yedEdgeLabel.split('/elm s').length > 2){
-  //   throw `parseYedLabel > You used ${yedEdgeLabel} as edge label. There can only be one / to avoid misunderstandings.`
-  // }
-  // Label as in yEd i.e. `x [y] / z` string, with x, y, z all optionals
-  // Also: z is a string representing a function, but not a function
-  const yedEdgeLabelRegExp = /\[(.*)\]/;
-  const expressionList = yedEdgeLabel ? yedEdgeLabel.split(yedEdgeLabelRegExp) : [` / `];
+// Parser for parsing edge labels
+  // It is a stateful object, so needs to be recreated every time
+  const parser = new nearley.Parser(nearley.Grammar.fromCompiled(yedEdgeLabelGrammar));
 
-  // Possible cases:
-  // x [y] / z: expressionList.length === 3
-  // x [y]    : expressionList.length === 3
-  // [y] / z  : expressionList.length === 3
-  // - also covers empty `y` and empty `z`
-  // x / z    : expressionList.length === 1
-  // x        : expressionList.length === 1
-  // / z      : expressionList.length === 1
-  // nil      : expressionList.length === 1
-  const _actionFactory = (expressionList.length === 3
-      ? (expressionList[2] && expressionList[2].split('/')[1])|| ""
-      : expressionList[0].split('/')[1] || ""
-  ).trim();
-  if (_actionFactory === DEFAULT_ACTION_FACTORY_STR) {
-    throw `parseYedLabel > You cannot use ${DEFAULT_ACTION_FACTORY_STR} as action!`
+  const yedEdgeLabel = _yedEdgeLabel && trimInside(_yedEdgeLabel).trim() || "";
+  try{parser.feed(yedEdgeLabel);} catch(e) {
+    throw new Error(`parseYedLabel > parser.feed: String "${yedEdgeLabel}" fails parsing. \nPlease review the syntax rules for edge labels. \ncf. ttps://brucou.github.io/documentation/v1/tooling/graph_editing.html#Rules`)
   }
-  const actionFactory = _actionFactory || DEFAULT_ACTION_FACTORY_STR;
+  // Handles empty array that is returned if the empty string is fed to the parser
+  const {event, guard, actions} = parser.results[0] || {event: "", guard: "", actions: ""};
 
-  // Reminder: eventless means !event is truthy so "" is ok
-  const event = (expressionList.length === 3
-      ? (expressionList[0] && expressionList[0].trim()) || ''
-      : expressionList[0].split('/')[0] || ''
-  ).trim();
-  const guard = (expressionList.length === 3 ? (expressionList[1] && expressionList[1].trim()) || '' : '').trim();
-
-  if ([actionFactory, event, guard].some(str => str.includes(SEP))){
-    throw `parseYedLabel > You used ${yedEdgeLabel} as edge label. You cannot use the character ${SEP} in a label!`
+  // There should not be any parsing errors that can be recovered
+  // However, [gua[rd] will not be recognized (rightfully) as a guard
+  // and [gua[rd] will return null?
+  return {
+    actionFactory: actions.trim() || DEFAULT_ACTION_FACTORY_STR,
+    event: event.trim(),
+    guard: guard.trim()
   }
-  return {actionFactory, event, guard}
 }
 
 function aggregateEdgesPerFromEventKey(acc, yedEdge) {
@@ -318,8 +300,6 @@ function computeTransitionsAndStatesFromXmlString(yedString) {
   const stateHierarchy = mapOverTree(stateHierarchyLens, x => x, graphObj)[SEP];
   const stateYed2KinglyMap = mapOverTree(stateYed2KinglyLens, x => x, graphObj);
   const yedEdges = graphObj.graph.edge;
-  console.warn(`stateHierarchy\n`, stateHierarchy)
-  console.warn(`stateYed2KinglyMap\n`, stateYed2KinglyMap)
 
   // Kingly only admits one transition record per (from, event) couple
   // Additionally, when there is no guard to check, a simplified transition format can be used
