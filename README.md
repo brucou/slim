@@ -200,17 +200,18 @@ The following complex wizard form was [implemented](https://github.com/brucou/cy
 
 ![subscription wizard form modelization](https://github.com/brucou/cycle-state-machine-demo/raw/master/public/assets/images/graphs/sparks%20application%20process%20with%20comeback%20proper%20syntax%20-%20flat%20fsm.png)
 
-The first implementation of the [Conduit average-sized application](https://rw-kingly-svelte.bricoi1.now.sh/#/) has ~50 states, ~100 transitions and weighted 3.3KB min.gzipped. We estimated that writing this logic by hand may have shaved 200 bytes, which is thus the cost we pay for using state machines.
+The first implementation of the [Conduit average-sized application](https://rw-kingly-svelte.bricoi1.now.sh/#/) has ~50 states, ~100 transitions and weighted 3.3KB min.gzipped. We estimated that writing this logic by hand may have shaved 200 (extra code due to compiler) + 300 bytes (extra code due to using a graph editor), which is thus the cost we pay for using state machines and the graph editor (0.5KB).
 
 Those preliminary results are fairly consistent. Assuming 30 bytes per transitions (computed from the previous data points), with a base line of 500 bytes, to reach 5KB we need a machine with 150 transitions!! Note that this size does not (and cannot) include the actions and guards but does represent the size of the logic encoded in the machine.
 
-In summary, endowed with the present compiler, **Kingly proposes state machines as a zero-cost abstraction**. This means that if you would have written that logic by hand, you would not have been able to achieve a significantly improved min.gzipped size.
+In summary, endowed with the present compiler, **Kingly introduces state machines essentially as a zero-cost abstraction**. This means that if you would have written that logic by hand, you would not have been able to achieve a significantly improved min.gzipped size.
 
 # Tests
-Tests are run with [mocha](https://mochajs.org/). Go to the [`tests` directory](https://github.com/brucou/slim/tree/master/tests) and run:  
+Tests are run with [mocha](https://mochajs.org/):
 
 ```bash
-mocha *specs*
+cd tests;
+mocha end-to-end.specs.js 2> logError.txt > log.txt
 ``` 
 
 # Known limitations

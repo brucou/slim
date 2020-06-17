@@ -34,59 +34,59 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n1ღA"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     n1ღA: {
-      event: function (es, ed, stg) {
+      event: function (s, ed, stg) {
         let computed = null;
-        if (guards["condition1"](es, ed, stg)) {
-          computed = actions["logAtoTemp1"](es, ed, stg);
+        if (guards["condition1"](s, ed, stg)) {
+          computed = actions["logAtoTemp1"](s, ed, stg);
           cs = "n2ღTemp1";
-        } else if (guards["condition2"](es, ed, stg)) {
-          computed = actions["logAtoTemp2"](es, ed, stg);
+        } else if (guards["condition2"](s, ed, stg)) {
+          computed = actions["logAtoTemp2"](s, ed, stg);
           cs = "n3ღTemp2";
-        } else if (guards["condition3"](es, ed, stg)) {
-          computed = actions["logAtoDone"](es, ed, stg);
+        } else if (guards["condition3"](s, ed, stg)) {
+          computed = actions["logAtoDone"](s, ed, stg);
           cs = "n4ღDone";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;
       },
     },
     n2ღTemp1: {
-      "": function (es, ed, stg) {
-        let computed = actions["logTemp1toA"](es, ed, stg);
+      "": function (s, ed, stg) {
+        let computed = actions["logTemp1toA"](s, ed, stg);
         cs = "n1ღA";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     n3ღTemp2: {
-      "": function (es, ed, stg) {
-        let computed = actions["logTemp2toA"](es, ed, stg);
+      "": function (s, ed, stg) {
+        let computed = actions["logTemp2toA"](s, ed, stg);
         cs = "n1ღA";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     n4ღDone: {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["shouldReturnToA"](es, ed, stg)) {
+        if (guards["shouldReturnToA"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n1ღA";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;

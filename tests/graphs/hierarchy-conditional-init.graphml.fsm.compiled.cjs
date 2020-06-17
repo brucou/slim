@@ -34,31 +34,31 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n1ღA"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     "n2ღGroup 1": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["isNumber"](es, ed, stg)) {
-          computed = actions["logAtoB"](es, ed, stg);
+        if (guards["isNumber"](s, ed, stg)) {
+          computed = actions["logAtoB"](s, ed, stg);
           cs = "n2::n0ღB";
-        } else if (guards["not(isNumber)"](es, ed, stg)) {
-          computed = actions["logAtoC"](es, ed, stg);
+        } else if (guards["not(isNumber)"](s, ed, stg)) {
+          computed = actions["logAtoC"](s, ed, stg);
           cs = "n2::n2ღC";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;
       },
     },
     n1ღA: {
-      event1: function (es, ed, stg) {
+      event1: function (s, ed, stg) {
         cs = "n2ღGroup 1"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };

@@ -106,19 +106,35 @@ function parseYedLabel(_yedEdgeLabel) {
 
   const yedEdgeLabel = _yedEdgeLabel && trimInside(_yedEdgeLabel).trim() || "";
   try{parser.feed(yedEdgeLabel);} catch(e) {
+    console.error(e);
     throw new Error(`parseYedLabel > parser.feed: String "${yedEdgeLabel}" fails parsing. \nPlease review the syntax rules for edge labels. \ncf. ttps://brucou.github.io/documentation/v1/tooling/graph_editing.html#Rules`)
   }
-  // Handles empty array that is returned if the empty string is fed to the parser
-  const {event, guard, actions} = parser.results[0] || {event: "", guard: "", actions: ""};
 
-  // There should not be any parsing errors that can be recovered
-  // However, [gua[rd] will not be recognized (rightfully) as a guard
-  // and [gua[rd] will return null?
-  return {
-    actionFactory: actions.trim() || DEFAULT_ACTION_FACTORY_STR,
-    event: event.trim(),
-    guard: guard.trim()
+  // Two cases from the grammar:
+  // 1. multi-transitions label
+  // 2. mono-transition label
+  let arrTransitions = [];
+  const results = parser.results[0];
+  if (Array.isArray(results)){
+    arrTransitions = arrTransitions.concat(results);
   }
+  else {
+    if (results){
+      arrTransitions.push(results);
+    }
+    else {
+      arrTransitions.push({event: "", guard: "", actions: ""});
+    }
+  }
+
+  return arrTransitions.map(transitionRecord => {
+    const {event, guard, actions} = transitionRecord;
+    return {
+      actionFactory: actions.trim() || DEFAULT_ACTION_FACTORY_STR,
+        event: event.trim(),
+      guard: guard.trim()
+    }
+  })
 }
 
 function aggregateEdgesPerFromEventKey(acc, yedEdge) {
@@ -126,15 +142,20 @@ function aggregateEdgesPerFromEventKey(acc, yedEdge) {
   const from = view(lensPath(['@_source']), yedEdge).trim();
   const to = view(lensPath(['@_target']), yedEdge).trim();
   const yedEdgeLabel = getYedEdgeLabel(yedEdge);
-  const {actionFactory, event, guard} = parseYedLabel(yedEdgeLabel);
-  const fromEventKey = [from, event].join(SEP);
 
-  hashMap[fromEventKey] = hashMap[fromEventKey] || [];
-  hashMap[fromEventKey] = hashMap[fromEventKey].concat([
-    {predicate: guard.trim(), to: to.trim(), actionFactory: actionFactory.trim()},
-  ]);
+  const  transitionsRecords = parseYedLabel(yedEdgeLabel);
+  transitionsRecords.forEach(transitionsRecord => {
+    const {actionFactory, event, guard} = transitionsRecord;
+    const fromEventKey = [from, event].join(SEP);
 
-  return {edges: hashMap, events: event ? events.add(event) : events};
+    hashMap[fromEventKey] = hashMap[fromEventKey] || [];
+    hashMap[fromEventKey] = hashMap[fromEventKey].concat([
+      {predicate: guard.trim(), to: to.trim(), actionFactory: actionFactory.trim()},
+    ]);
+    if (event) events.add(event)
+  });
+
+  return {edges: hashMap, events};
 }
 
 /**

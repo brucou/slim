@@ -31,55 +31,55 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n1ღA"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     n1ღA: {
-      event1: function (es, ed, stg) {
-        let computed = actions["logAtoB"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logAtoB"](s, ed, stg);
         cs = "n2ღB";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
-      event2: function (es, ed, stg) {
-        let computed = actions["logAtoC"](es, ed, stg);
+      event2: function (s, ed, stg) {
+        let computed = actions["logAtoC"](s, ed, stg);
         cs = "n3ღC";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     n2ღB: {
-      event2: function (es, ed, stg) {
-        let computed = actions["logBtoD"](es, ed, stg);
+      event2: function (s, ed, stg) {
+        let computed = actions["logBtoD"](s, ed, stg);
         cs = "n4ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     n3ღC: {
-      event1: function (es, ed, stg) {
-        let computed = actions["logCtoD"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logCtoD"](s, ed, stg);
         cs = "n4ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     n4ღD: {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["shouldReturnToA"](es, ed, stg)) {
-          computed = actions["logDtoA"](es, ed, stg);
+        if (guards["shouldReturnToA"](s, ed, stg)) {
+          computed = actions["logDtoA"](s, ed, stg);
           cs = "n1ღA";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;

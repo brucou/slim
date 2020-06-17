@@ -62,122 +62,122 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n1ღA"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     n1ღA: {
-      event1: function (es, ed, stg) {
-        let computed = actions["logAtoGroup1"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logAtoGroup1"](s, ed, stg);
         cs = "n2ღGroup 1";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n0ღB": {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         cs = "n2::n2ღGroup 2"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     "n2ღGroup 1": {
-      init: function (es, ed, stg) {
-        let computed = actions["logGroup1toGroup2"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["logGroup1toGroup2"](s, ed, stg);
         cs = "n2::n0ღB";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2ღGroup 2": {
-      init: function (es, ed, stg) {
-        let computed = actions["logGroup2toGroup3"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["logGroup2toGroup3"](s, ed, stg);
         cs = "n2::n2::n1ღGroup 3";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2::n1::n0ღB": {
-      event1: function (es, ed, stg) {
-        let computed = actions["logGroup3BtoGroup4"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logGroup3BtoGroup4"](s, ed, stg);
         cs = "n2::n2::n1::n3ღGroup 4";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2::n1ღGroup 3": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["isNumber"](es, ed, stg)) {
-          computed = actions["logGroup3toB"](es, ed, stg);
+        if (guards["isNumber"](s, ed, stg)) {
+          computed = actions["logGroup3toB"](s, ed, stg);
           cs = "n2::n2::n1::n0ღB";
-        } else if (guards["not(isNumber)"](es, ed, stg)) {
-          computed = actions["logGroup3toC"](es, ed, stg);
+        } else if (guards["not(isNumber)"](s, ed, stg)) {
+          computed = actions["logGroup3toC"](s, ed, stg);
           cs = "n2::n2::n1::n2ღC";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;
       },
     },
     "n2::n2::n1::n3::n0ღA": {
-      event1: function (es, ed, stg) {
-        let computed = actions["logAtoB"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logAtoB"](s, ed, stg);
         cs = "n2::n2::n1::n3::n1ღB";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
-      event2: function (es, ed, stg) {
-        let computed = actions["logAtoC"](es, ed, stg);
+      event2: function (s, ed, stg) {
+        let computed = actions["logAtoC"](s, ed, stg);
         cs = "n2::n2::n1::n3::n2ღC";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2::n1::n3::n1ღB": {
-      event2: function (es, ed, stg) {
-        let computed = actions["logBtoD"](es, ed, stg);
+      event2: function (s, ed, stg) {
+        let computed = actions["logBtoD"](s, ed, stg);
         cs = "n2::n2::n1::n3::n3ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2::n1::n3::n2ღC": {
-      event1: function (es, ed, stg) {
-        let computed = actions["logCtoD"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logCtoD"](s, ed, stg);
         cs = "n2::n2::n1::n3::n3ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n2::n2::n1::n3::n3ღD": {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["shouldReturnToA"](es, ed, stg)) {
-          computed = actions["logDtoA"](es, ed, stg);
+        if (guards["shouldReturnToA"](s, ed, stg)) {
+          computed = actions["logDtoA"](s, ed, stg);
           cs = "n2::n2::n1::n3::n0ღA";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;
       },
     },
     "n2::n2::n1::n3ღGroup 4": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n2::n2::n1::n3::n0ღA"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };

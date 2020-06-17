@@ -56,33 +56,33 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     "n2ღGroup 1": {
-      event3: function (es, ed, stg) {
+      event3: function (s, ed, stg) {
         cs = "n1ღD"; // No action, only cs changes!
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return { outputs: [], updates: [] };
       },
-      init: function (es, ed, stg) {
-        let computed = actions["logGroup1toC"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["logGroup1toC"](s, ed, stg);
         cs = "n2::n1ღC";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     n1ღD: {
-      "": function (es, ed, stg) {
-        let computed = actions["logDtoGroup1H"](es, ed, stg);
+      "": function (s, ed, stg) {
+        let computed = actions["logDtoGroup1H"](s, ed, stg);
         cs = hs["shallow"]["n2ღGroup 1"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n2::n0ღB"; // No action, only cs changes!
         hs = updateHistoryState(hs, getAncestors, cs);
 
@@ -90,28 +90,28 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n0ღB": {
-      event1: function (es, ed, stg) {
-        let computed = actions["logBtoD"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logBtoD"](s, ed, stg);
         cs = "n2::n2ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      event2: function (es, ed, stg) {
-        let computed = actions["logBtoC"](es, ed, stg);
+      event2: function (s, ed, stg) {
+        let computed = actions["logBtoC"](s, ed, stg);
         cs = "n2::n1ღC";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n1ღC": {
-      event1: function (es, ed, stg) {
-        let computed = actions["logCtoD"](es, ed, stg);
+      event1: function (s, ed, stg) {
+        let computed = actions["logCtoD"](s, ed, stg);
         cs = "n2::n2ღD";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;

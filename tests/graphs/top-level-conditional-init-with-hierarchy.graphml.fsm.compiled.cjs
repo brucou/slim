@@ -34,43 +34,43 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n1ღGroup 1"; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
     "n1::n0ღNumber": {
-      continue: function (es, ed, stg) {
-        let computed = actions["logNumber"](es, ed, stg);
+      continue: function (s, ed, stg) {
+        let computed = actions["logNumber"](s, ed, stg);
         cs = "n1::n3ღDone";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },
     },
     "n1ღGroup 1": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["isNumber"](es, ed, stg)) {
+        if (guards["isNumber"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n1::n0ღNumber";
-        } else if (guards["not(isNumber)"](es, ed, stg)) {
+        } else if (guards["not(isNumber)"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n1::n2ღOther";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
         }
 
         return computed;
       },
     },
     "n1::n2ღOther": {
-      continue: function (es, ed, stg) {
-        let computed = actions["logOther"](es, ed, stg);
+      continue: function (s, ed, stg) {
+        let computed = actions["logOther"](s, ed, stg);
         cs = "n1::n3ღDone";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
 
         return computed;
       },

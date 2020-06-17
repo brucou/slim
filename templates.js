@@ -37,15 +37,15 @@ const transitionWithoutGuard = (action, to, usesHistoryStates) => {
   const computed = isActionIdentity ? ACTION_IDENTITY(): null;
 
     return [
-    `function (es, ed, stg){`,
+    `function (s, ed, stg){`,
       isActionIdentity
         ? `
         cs = ${resolve(to)}; // No action, only cs changes!
         `.trim()
       : `
-      let computed = actions[\"${action.slice(3, -3)}\"](es, ed, stg);
+      let computed = actions[\"${action.slice(3, -3)}\"](s, ed, stg);
         cs = ${resolve(to)};
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
       `.trim(),
     // ``,
     // `        cs = ${resolve(to)};`,

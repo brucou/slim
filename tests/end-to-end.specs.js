@@ -15,7 +15,7 @@ const unknownEvent = { event3: void 0 };
 const updateState = (extendedState, updates) => Object.assign({}, extendedState, updates);
 const traceTransition = str => ({ outputs: [str], updates: {} });
 
-describe('End-to-end graphml to kingly', function() {
+describe('End-to-end graphml to kingly - one transition per edge', function() {
   describe('top_level_conditional_init', function() {
     // run the script on the test file
     const graphMlFile = './graphs/top-level-conditional-init.graphml';
@@ -1096,4 +1096,94 @@ describe('End-to-end graphml to kingly', function() {
     });
   });
 
+});
+
+describe('End-to-end graphml to kingly - several transitions per edge', function() {
+  describe('counter-inc-dec', function() {
+  // run the script on the test file
+  const graphMlFile = './graphs/counter-inc-dec.graphml';
+  try {
+    execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
+  }
+  catch (err) {
+    assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
+  }
+
+  // require the js file
+  const { createStateMachine } = require(`${graphMlFile}.fsm.compiled.cjs`);
+
+  // Build the machine
+  const guards = {};
+  const actionFactories = {
+    "increment counter, render": (s, e, stg) => ({updates: [+1], outputs:[s+1]}),
+    "decrement counter, render": (s, e, stg) => ({updates: [-1], outputs:[s-1]}),
+  };
+  const event1 = {"click inc": void 0};
+  const event2 = {"click dec": void 0};
+  const eventSpace = [event1, event2, {dummy:0}];
+
+  const fsmDef1 = {
+    updateState: (s, u) => {
+      return u.reduce((a,b) => a+b, s)
+    },
+    initialExtendedState: 0,
+    actionFactories,
+    guards,
+  };
+
+  const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
+  const cases = inputSpace.map(scenario => {
+    return [eventSpace[scenario[0]], eventSpace[scenario[1]], eventSpace[scenario[2]]];
+  });
+    const expected1 = [
+      // [event1, event1, event1]
+      [[1], [2], [3]],
+      [[1], [2], [1]],
+      [[1], [2], null],
+      // [event1, event2, event1]
+      [[1], [0], [1]],
+      [[1], [0], [-1]],
+      [[1], [0], null],
+      // // [event1, event3, event1]
+      [[1], null, [2]],
+      [[1], null, [0]],
+      [[1], null, null],
+      // // [event2, event1, event1]
+      [[-1], [0], [1]],
+      [[-1], [0], [-1]],
+      [[-1], [0], null],
+      // // [event2, event2, event1]
+      [[-1], [-2], [-1]],
+      [[-1], [-2], [-3]],
+      [[-1], [-2], null],
+      // // [event2, event3, event1]
+      [[-1], null, [0]],
+      [[-1], null, [-2]],
+      [[-1], null, null],
+      // // [event3, event1, event1]
+      [null, [1], [2]],
+      [null, [1], [0]],
+      [null, [1], null],
+      // // [event3, event2, event1]
+      [null, [-1], [0]],
+      [null, [-1], [-2]],
+      [null, [-1], null],
+      // // [event3, event3, event1]
+      [null, null, [1]],
+      [null, null, [-1]],
+      [null, null, null],
+    ];
+
+  it('runs the machine as per the graph', function() {
+    cases.forEach((scenario, index) => {
+      // Allows to pick some specific index for easier debugging
+      // if (index > 20) return
+      const fsm = createStateMachine(fsmDef1, settings);
+      const outputs = scenario.map(fsm);
+      assert.deepEqual(outputs, expected1[index], prettyFormat(scenario));
+    });
+  });
+
+
+});
 });

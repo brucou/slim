@@ -139,20 +139,20 @@ module.exports = function slim(argv) {
                     `${JSON.stringify(event)}:  ${!guards
                       ? transitionWithoutGuard(action, to, usesHistoryStates)
                       : [
-                        `function (es, ed, stg){`,
+                        `function (s, ed, stg){`,
                         `let computed = null;`,
                         guards.map(({ predicate, to, action }, index) => {
                           const actionName = action.slice(3, -3);
                           if (actionName === 'ACTION_IDENTITY') {
                             const computed = ACTION_IDENTITY();
-                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  ${JSON.stringify(computed)}; cs = ${resolve(to)};}`;
+                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](s, ed, stg)) {computed =  ${JSON.stringify(computed)}; cs = ${resolve(to)};}`;
                           }
                           else {
-                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](es, ed, stg)) {computed =  actions["${action.slice(3, -3)}"](es, ed, stg); cs = ${resolve(to)};}`;
+                            return `${index ? 'else if' : 'if'} (guards["${predicate.slice(3, -3)}"](s, ed, stg)) {computed =  actions["${action.slice(3, -3)}"](s, ed, stg); cs = ${resolve(to)};}`;
                           }
                         }).join('\n'),
                         `if (computed !== null) {
-                      es = updateState(es, computed.updates);`,
+                      es = updateState(s, computed.updates);`,
                         usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs);` || '',
                         `                  }
                         
