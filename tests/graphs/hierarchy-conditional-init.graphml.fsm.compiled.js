@@ -5,17 +5,32 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
-//   "isNumber": function (){},
-//   "not(isNumber)": function (){},
+//   "isNumber": function (extendedState, eventData, settings){},
+//   "not(isNumber)": function (extendedState, eventData, settings){},
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logAtoB": function (){},
-//   "logAtoC": function (){},
+//   "logAtoB": function (extendedState, eventData, settings){},
+//   "logAtoC": function (extendedState, eventData, settings){},
 // };
 // ----------------
 var nextEventMap = { "n2ღGroup 1": "init" };
+
+false;
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -79,7 +94,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       // cs, es, hs have been updated in place by the handler
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
-          null
+          [null]
         : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any

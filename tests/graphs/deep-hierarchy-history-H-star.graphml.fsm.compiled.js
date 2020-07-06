@@ -5,21 +5,35 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logGroup1toH*": function (){},
-//   "logBtoC": function (){},
-//   "logBtoD": function (){},
-//   "logCtoD": function (){},
-//   "logGroup1toD": function (){},
-//   "logGroup1toC": function (){},
-//   "logDtoD": function (){},
+//   "logGroup1toH*": function (extendedState, eventData, settings){},
+//   "logBtoC": function (extendedState, eventData, settings){},
+//   "logBtoD": function (extendedState, eventData, settings){},
+//   "logCtoD": function (extendedState, eventData, settings){},
+//   "logGroup1toD": function (extendedState, eventData, settings){},
+//   "logGroup1toC": function (extendedState, eventData, settings){},
+//   "logDtoD": function (extendedState, eventData, settings){},
 // };
 // ----------------
 var nextEventMap = { n1ღE: "", "n2ღGroup 1": "init", "n2::n1ღC": "", "n2::n2ღGroup 1": "init" };
 
+false;
 function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === "nok") {
     return history;
@@ -88,6 +102,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
         return computed;
       },
+
       init: function (s, ed, stg) {
         let computed = actions["logGroup1toC"](s, ed, stg);
         cs = "n2::n1ღC";
@@ -122,6 +137,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
         return computed;
       },
+
       event1: function (s, ed, stg) {
         let computed = actions["logBtoD"](s, ed, stg);
         cs = "n2::n2::n2ღD";
@@ -176,7 +192,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       // cs, es, hs have been updated in place by the handler
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
-          null
+          [null]
         : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any

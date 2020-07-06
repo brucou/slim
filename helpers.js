@@ -140,8 +140,8 @@ function mapGuardStrToGuardFn(guards, predicateStr) {
   return guards[predicateStr] || T;
 }
 
-function markFunctionStr(_, str) {
-  return ['', '', '', str, '', '', ''].join(SEP);
+function markArrayFunctionStr(_, arr) {
+  return arr.map(str => ['', '', '', str, '', '', ''].join(SEP));
 }
 
 function markFunctionNoop(_, str) {
@@ -264,11 +264,11 @@ function resolve(to) {
 }
 
 function trimInside(str) {
-  return str.replace(/\n/gm, ' ').replace(/\r/gm, ' ').replace(/\s+/g, " ");
+  return str.replace(/\n/gm, ' ').replace(/\r/gm, ' ').replace(/\s+/g, ' ');
 }
 
-function computeParentMapFromHistoryMaps(historyMaps){
-  const {stateList, stateAncestors} = historyMaps;
+function computeParentMapFromHistoryMaps(historyMaps) {
+  const { stateList, stateAncestors } = historyMaps;
   // Example of stateAncestors
   // var stateAncestors = {
   //   "n2::n0ღHome route": ["n2ღApplication core"],
@@ -279,71 +279,72 @@ function computeParentMapFromHistoryMaps(historyMaps){
   //   "n2::n5::n5ღcan (un)follow": ["n2::n5ღArticle route", "n2ღApplication core"],
   // };
   const css = Object.keys(stateAncestors);
-  if (css.length === 0) return {}
+  if (css.length === 0) return {};
   else {
     // First add the parents that we already have identified in the stateAncestors map
     let parentMap = css.reduce((acc, cs) => {
       const ancestors = stateAncestors[cs];
       acc[cs] = ancestors[0];
-      return acc
+      return acc;
     }, {});
-    return parentMap
+    return parentMap;
   }
 };
 
-function           getCommentsHeader(transitionsWithoutGuardsActions){
+function getCommentsHeader(transitionsWithoutGuardsActions) {
   // Stringify the transitions without guards and actions (we just have the names of such)
   // to hold the guards and actions
   let predicateList = new Set();
   let actionList = new Set();
+  // Used to compute predicateList and actionList
   transitionsWithoutGuardsActions.map(transitionRecord => {
-    if (transitionRecord.guards) {
-      const {from, event, guards} = transitionRecord;
-      return `
+    const { from, event, guards } = transitionRecord;
+    // console.warn(`getCommentsHeader > transitionRecord > guards`, guards);
+    return `
            { from: "${from}", event: "${event}", guards: [
            ${guards.map(guardRecord => {
-        const {predicate, to, action} = guardRecord;
-        const predicateStr = predicate.slice(3, -3);
-        const actionStr = action.slice(3, -3);
-        predicateList.add(predicateStr);
-        actionList.add(actionStr);
-        // actionList.push(actionStr);
-
-        return `
-          {predicate: guards["${predicateStr}"], to: ${JSON.stringify(to)}, action: aF["${actionStr}"]}, 
-          `.trim()
-      }).join("\n")
-        }
-      ]}
-        `.trim().concat(", ")
-    }
-    else {
-      const {from, event, to, action} = transitionRecord;
-      const actionStr = action.slice(3, -3);
-      actionList.add(actionStr);
+      const { predicate, to, action } = guardRecord;
+      const predicates = predicate.map(x => x.slice(3, -3)).filter(Boolean);
+      const actions = action.map(x => x.slice(3, -3)).filter(Boolean);
+      predicates.forEach(x => predicateList.add(x));
+      actions.forEach(x => actionList.add(x));
 
       return `
-          { from: "${from}", event: "${event}", to: ${JSON.stringify(to)}, action: aF["${actionStr}"] } 
-        `.trim().concat(", ")
-    }
-  }).join("\n");
+          {predicate: every(${JSON.stringify(predicates)}, guards), to: ${JSON.stringify(to)}, action: chain(${JSON.stringify(actions)}, aF)}, 
+          `.trim();
+    }).join('\n')
+      }
+      ]}
+        `.trim().concat(', ');
+  }).join('\n');
 
-  return  `
+  return `
       // Copy-paste help
       // For debugging purposes, guards and actions functions should all have a name
       // Using natural language sentences for labels in the graph is valid
       // guard and action functions name still follow JavaScript rules though
       // -----Guards------
+      /**
+      * @param {E} extendedState
+      * @param {D} eventData
+      * @param {X} settings
+      * @returns Boolean
+      */
       // const guards = {${Array.from(predicateList)
-    .map(pred => `\n//   "${pred}": function (){},`)
-    .join("")}
+    .map(pred => `\n//   "${pred}": function (extendedState, eventData, settings){},`)
+    .join('')}
       // };
       // -----Actions------
+      /**
+      * @param {E} extendedState
+      * @param {D} eventData
+      * @param {X} settings
+      * @returns {{updates: U[], outputs: O[]}}
+      * (such that updateState:: E -> U[] -> E)
+      */
       // const actions = {${Array.from(actionList)
-    .map(action => action !== DEFAULT_ACTION_FACTORY_STR
-      ? `\n//   "${action}": function (){},`
-      : "")
-    .join("")}
+    .map(action => `\n//   "${action}": function (extendedState, eventData, settings){},`)
+    .join('')}
       // };
       // ----------------
       `.trim();
@@ -352,7 +353,8 @@ function           getCommentsHeader(transitionsWithoutGuardsActions){
 const frontHeader = `
 // Generated automatically by Kingly, version 0.7
 // http://github.com/brucou/Kingly
-`.trim()
+`.trim();
+
 module.exports = {
   T,
   tryCatchFactory,
@@ -372,7 +374,7 @@ module.exports = {
   parseGraphMlString,
   formatResult,
   cartesian,
-  markFunctionStr,
+  markFunctionStr: markArrayFunctionStr,
   markFunctionNoop,
   markGuardNoop,
   checkKinglyContracts,

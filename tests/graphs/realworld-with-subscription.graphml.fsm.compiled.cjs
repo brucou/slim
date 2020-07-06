@@ -332,65 +332,65 @@ function createStateMachine(fsmDefForCompile, stg) {
 
   var eventHandlers = {
     nok: {
-      init: function (es, ed, stg) {
-        let computed = actions["update url"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["update url"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     n1ღrouting: {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["'/#' route"](es, ed, stg)) {
+        if (guards["'/#' route"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n0ღHome route";
-        } else if (guards["'/#register' route"](es, ed, stg)) {
+        } else if (guards["'/#register' route"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n1ღSign up route";
-        } else if (guards["'#/login' route"](es, ed, stg)) {
+        } else if (guards["'#/login' route"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n2ღSign in route";
-        } else if (guards["'#/@:username' route"](es, ed, stg)) {
+        } else if (guards["'#/@:username' route"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n4ღProfile route";
-        } else if (guards["'#/article/:slug' route"](es, ed, stg)) {
+        } else if (guards["'#/article/:slug' route"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n5ღArticle route";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
         return computed;
       },
-      "'#": function (es, ed, stg) {
-        let computed = actions["editor' route"](es, ed, stg);
+      "'#": function (s, ed, stg) {
+        let computed = actions["editor' route"](s, ed, stg);
         cs = "n2::n3ღEditor route";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n1ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url, redirect to signup route"](es, ed, stg);
+        if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url, redirect to signup route"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["authenticated &amp; liked"](es, ed, stg)) {
-          computed = actions["request unlike article, update liked, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; liked"](s, ed, stg)) {
+          computed = actions["request unlike article, update liked, render"](s, ed, stg);
           cs = hs["deep"]["n2::n0::n0ღFeeds"];
-        } else if (guards["authenticated &amp; !liked"](es, ed, stg)) {
-          computed = actions["request like article, update liked, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; !liked"](s, ed, stg)) {
+          computed = actions["request like article, update liked, render"](s, ed, stg);
           cs = hs["deep"]["n2::n0::n0ღFeeds"];
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -398,17 +398,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n1::n4ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["sign up"](es, ed, stg);
+        } else if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["sign up"](s, ed, stg);
           cs = "n2::n1::n2ღSigning up";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -416,17 +416,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n2::n3ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["render sign in form"](es, ed, stg);
+        } else if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["render sign in form"](s, ed, stg);
           cs = "n2::n2::n1ღForm entry";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -434,35 +434,35 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n2::n2ღSigning in": {
-      SUCCEEDED_SIGN_IN: function (es, ed, stg) {
-        let computed = actions["save user, update url redirect to home"](es, ed, stg);
+      SUCCEEDED_SIGN_IN: function (s, ed, stg) {
+        let computed = actions["save user, update url redirect to home"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      FAILED_SIGN_IN: function (es, ed, stg) {
-        let computed = actions["render sign in form fetch session data"](es, ed, stg);
+      FAILED_SIGN_IN: function (s, ed, stg) {
+        let computed = actions["render sign in form fetch session data"](s, ed, stg);
         cs = "n2::n2::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n1::n3ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["render sign up form"](es, ed, stg);
+        } else if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["render sign up form"](s, ed, stg);
           cs = "n2::n1::n1ღForm entry";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -470,32 +470,32 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n1::n2ღSigning up": {
-      SUCCEEDED_SIGN_UP: function (es, ed, stg) {
-        let computed = actions["save user, update url redirect to home"](es, ed, stg);
+      SUCCEEDED_SIGN_UP: function (s, ed, stg) {
+        let computed = actions["save user, update url redirect to home"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      FAILED_SIGN_UP: function (es, ed, stg) {
-        let computed = actions["render sign up form fetch session data"](es, ed, stg);
+      FAILED_SIGN_UP: function (s, ed, stg) {
+        let computed = actions["render sign up form fetch session data"](s, ed, stg);
         cs = "n2::n1::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2ღApplication core": {
-      ROUTE_CHANGED: function (es, ed, stg) {
+      ROUTE_CHANGED: function (s, ed, stg) {
         let computed = null;
-        if (guards["new route?"](es, ed, stg)) {
-          computed = actions["update url"](es, ed, stg);
+        if (guards["new route?"](s, ed, stg)) {
+          computed = actions["update url"](s, ed, stg);
           cs = "n1ღrouting";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -503,35 +503,35 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n3::n5ღFetching article": {
-      FAILED_FETCH_ARTICLE: function (es, ed, stg) {
-        let computed = actions["update url redirect home"](es, ed, stg);
+      FAILED_FETCH_ARTICLE: function (s, ed, stg) {
+        let computed = actions["update url redirect home"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      FETCHED_ARTICLE: function (es, ed, stg) {
-        let computed = actions["fetch session data update editor route state"](es, ed, stg);
+      FETCHED_ARTICLE: function (s, ed, stg) {
+        let computed = actions["fetch session data update editor route state"](s, ed, stg);
         cs = "n2::n3::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n3::n4ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["publish article"](es, ed, stg);
+        } else if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["publish article"](s, ed, stg);
           cs = "n2::n3::n2ღPublishing article";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -539,35 +539,35 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n3::n2ღPublishing article": {
-      SUCCEEDED_PUBLISHING: function (es, ed, stg) {
-        let computed = actions["update url redirect to article"](es, ed, stg);
+      SUCCEEDED_PUBLISHING: function (s, ed, stg) {
+        let computed = actions["update url redirect to article"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      FAILED_PUBLISHING: function (es, ed, stg) {
-        let computed = actions["render editor form errors fetch session data"](es, ed, stg);
+      FAILED_PUBLISHING: function (s, ed, stg) {
+        let computed = actions["render editor form errors fetch session data"](s, ed, stg);
         cs = "n2::n3::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n2::n4ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["sign in"](es, ed, stg);
+        } else if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["sign in"](s, ed, stg);
           cs = "n2::n2::n2ღSigning in";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -575,17 +575,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n3::n3ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url redirect to home"](es, ed, stg);
+        if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url redirect to home"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["render editor form"](es, ed, stg);
+        } else if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["render editor form"](s, ed, stg);
           cs = "n2::n3::n1ღEditing new article";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -593,20 +593,20 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n4::n4ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url, redirect to signup route"](es, ed, stg);
+        if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url, redirect to signup route"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["authenticated &amp; followed"](es, ed, stg)) {
-          computed = actions["request unfollow profile, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; followed"](s, ed, stg)) {
+          computed = actions["request unfollow profile, render"](s, ed, stg);
           cs = "n2::n4::n0ღUser profile";
-        } else if (guards["authenticated &amp; !followed"](es, ed, stg)) {
-          computed = actions["request follow profile, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; !followed"](s, ed, stg)) {
+          computed = actions["request follow profile, render"](s, ed, stg);
           cs = "n2::n4::n0ღUser profile";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -614,20 +614,20 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n4::n2ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update url, redirect to signup route"](es, ed, stg);
+        if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update url, redirect to signup route"](s, ed, stg);
           cs = "n1ღrouting";
-        } else if (guards["authenticated &amp; !liked"](es, ed, stg)) {
-          computed = actions["request like article, update liked, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; !liked"](s, ed, stg)) {
+          computed = actions["request like article, update liked, render"](s, ed, stg);
           cs = "n2::n4::n0ღUser profile";
-        } else if (guards["authenticated &amp; liked"](es, ed, stg)) {
-          computed = actions["request unlike article, update liked, render"](es, ed, stg);
+        } else if (guards["authenticated &amp; liked"](s, ed, stg)) {
+          computed = actions["request unlike article, update liked, render"](s, ed, stg);
           cs = "n2::n4::n0ღUser profile";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -635,14 +635,14 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n3ღChecking user": {
-      AUth_ChECKD: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["!authenticateed"](es, ed, stg)) {
-          computed = actions["update url redireect to signup route"](es, ed, stg);
+        if (guards["!authenticateed"](s, ed, stg)) {
+          computed = actions["update url redireect to signup route"](s, ed, stg);
           cs = "n1ღrouting";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -650,180 +650,180 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n0ღArticle rendering": {
-      "delete article OK": function (es, ed, stg) {
-        let computed = actions["redirect to home"](es, ed, stg);
+      "delete article OK": function (s, ed, stg) {
+        let computed = actions["redirect to home"](s, ed, stg);
         cs = "n1ღrouting";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetch article failed": function (es, ed, stg) {
-        let computed = actions["render articles errors"](es, ed, stg);
+      "fetch article failed": function (s, ed, stg) {
+        let computed = actions["render articles errors"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched article": function (es, ed, stg) {
-        let computed = actions["render articles"](es, ed, stg);
+      "fetched article": function (s, ed, stg) {
+        let computed = actions["render articles"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched comments": function (es, ed, stg) {
-        let computed = actions["render comments"](es, ed, stg);
+      "fetched comments": function (s, ed, stg) {
+        let computed = actions["render comments"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLE_FOLLOW_OK: function (es, ed, stg) {
-        let computed = actions["render follow button"](es, ed, stg);
+      TOGGLE_FOLLOW_OK: function (s, ed, stg) {
+        let computed = actions["render follow button"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLE_FOLLOW_NOK: function (es, ed, stg) {
-        let computed = actions["render follow button"](es, ed, stg);
+      TOGGLE_FOLLOW_NOK: function (s, ed, stg) {
+        let computed = actions["render follow button"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "toggled like": function (es, ed, stg) {
-        let computed = actions["fetch sesion data"](es, ed, stg);
+      "toggled like": function (s, ed, stg) {
+        let computed = actions["fetch sesion data"](s, ed, stg);
         cs = "n2::n5::n3::n0ღFetching like authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLED_FOLLOW: function (es, ed, stg) {
-        let computed = actions["fetch session data"](es, ed, stg);
+      TOGGLED_FOLLOW: function (s, ed, stg) {
+        let computed = actions["fetch session data"](s, ed, stg);
         cs = "n2::n5::n3::n1ღFetching follow authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "post comment": function (es, ed, stg) {
-        let computed = actions["fetch sesion data"](es, ed, stg);
+      "post comment": function (s, ed, stg) {
+        let computed = actions["fetch sesion data"](s, ed, stg);
         cs = "n2::n5::n3::n2ღFetching post authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "delete comment": function (es, ed, stg) {
-        let computed = actions["fetch sesion data"](es, ed, stg);
+      "delete comment": function (s, ed, stg) {
+        let computed = actions["fetch sesion data"](s, ed, stg);
         cs = "n2::n5::n3::n3ღFetching comment authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "delete article": function (es, ed, stg) {
-        let computed = actions["fetch sesion data"](es, ed, stg);
+      "delete article": function (s, ed, stg) {
+        let computed = actions["fetch sesion data"](s, ed, stg);
         cs = "n2::n5::n3::n4ღFetching delete authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "post comment OK": function (es, ed, stg) {
-        let computed = actions["update comments render"](es, ed, stg);
+      "post comment OK": function (s, ed, stg) {
+        let computed = actions["update comments render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "delete comment OK": function (es, ed, stg) {
-        let computed = actions["update comments render"](es, ed, stg);
+      "delete comment OK": function (s, ed, stg) {
+        let computed = actions["update comments render"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "API request failed": function (es, ed, stg) {
-        let computed = actions["do nothing"](es, ed, stg);
+      "API request failed": function (s, ed, stg) {
+        let computed = actions["do nothing"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n5::n1ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
-        let computed = actions["fetch article fetch comments render article loading screen"](es, ed, stg);
+      AUTH_CHECKED: function (s, ed, stg) {
+        let computed = actions["fetch article fetch comments render article loading screen"](s, ed, stg);
         cs = "n2::n5::n0ღArticle rendering";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n5ღArticle route": {
-      init: function (es, ed, stg) {
-        let computed = actions["fetch session data"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["fetch session data"](s, ed, stg);
         cs = "n2::n5::n1ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n5::n3::n0ღFetching like authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["authenticated"](es, ed, stg)) {
+        if (guards["authenticated"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n5::n4ღcan (un)like";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -831,14 +831,14 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n3::n1ღFetching follow authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["authenticated"](es, ed, stg)) {
+        if (guards["authenticated"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n5::n5ღcan (un)follow";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -846,14 +846,14 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n3::n2ღFetching post authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["authenticated"](es, ed, stg)) {
-          computed = actions["request post comment, update auth render"](es, ed, stg);
+        if (guards["authenticated"](s, ed, stg)) {
+          computed = actions["request post comment, update auth render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -861,14 +861,14 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n3::n3ღFetching comment authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["authenticated"](es, ed, stg)) {
-          computed = actions["request delete comment, update auth render"](es, ed, stg);
+        if (guards["authenticated"](s, ed, stg)) {
+          computed = actions["request delete comment, update auth render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -876,14 +876,14 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n3::n4ღFetching delete authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["authenticated"](es, ed, stg)) {
-          computed = actions["request delete article, update auth render"](es, ed, stg);
+        if (guards["authenticated"](s, ed, stg)) {
+          computed = actions["request delete article, update auth render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -891,17 +891,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n4ღcan (un)like": {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["!liked"](es, ed, stg)) {
-          computed = actions["request like article, update pending, render"](es, ed, stg);
+        if (guards["!liked"](s, ed, stg)) {
+          computed = actions["request like article, update pending, render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
-        } else if (guards["liked"](es, ed, stg)) {
-          computed = actions["request unlike article, update pending, render"](es, ed, stg);
+        } else if (guards["liked"](s, ed, stg)) {
+          computed = actions["request unlike article, update pending, render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -909,17 +909,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n5::n5ღcan (un)follow": {
-      "": function (es, ed, stg) {
+      "": function (s, ed, stg) {
         let computed = null;
-        if (guards["followed"](es, ed, stg)) {
-          computed = actions["request unfollow profile, render"](es, ed, stg);
+        if (guards["followed"](s, ed, stg)) {
+          computed = actions["request unfollow profile, render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
-        } else if (guards["!followed"](es, ed, stg)) {
-          computed = actions["request follow profile, render"](es, ed, stg);
+        } else if (guards["!followed"](s, ed, stg)) {
+          computed = actions["request follow profile, render"](s, ed, stg);
           cs = "n2::n5::n0ღArticle rendering";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -927,110 +927,110 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n4::n0ღUser profile": {
-      "clicked page": function (es, ed, stg) {
-        let computed = actions["update pagination, fetch session data"](es, ed, stg);
+      "clicked page": function (s, ed, stg) {
+        let computed = actions["update pagination, fetch session data"](s, ed, stg);
         cs = "n2::n4::n1ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles failed": function (es, ed, stg) {
-        let computed = actions["render articles errors"](es, ed, stg);
+      "fetched articles failed": function (s, ed, stg) {
+        let computed = actions["render articles errors"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched profile failed": function (es, ed, stg) {
-        let computed = actions["render articles errors"](es, ed, stg);
+      "fetched profile failed": function (s, ed, stg) {
+        let computed = actions["render articles errors"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles": function (es, ed, stg) {
-        let computed = actions["render articles"](es, ed, stg);
+      "fetched articles": function (s, ed, stg) {
+        let computed = actions["render articles"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched profile": function (es, ed, stg) {
-        let computed = actions["render profile"](es, ed, stg);
+      "fetched profile": function (s, ed, stg) {
+        let computed = actions["render profile"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLE_FOLLOW_OK: function (es, ed, stg) {
-        let computed = actions["render follow button"](es, ed, stg);
+      TOGGLE_FOLLOW_OK: function (s, ed, stg) {
+        let computed = actions["render follow button"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLE_FOLLOW_NOK: function (es, ed, stg) {
-        let computed = actions["render follow button"](es, ed, stg);
+      TOGGLE_FOLLOW_NOK: function (s, ed, stg) {
+        let computed = actions["render follow button"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = "n2::n4::n0ღUser profile";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "toggled like": function (es, ed, stg) {
-        let computed = actions["fetch sesion data"](es, ed, stg);
+      "toggled like": function (s, ed, stg) {
+        let computed = actions["fetch sesion data"](s, ed, stg);
         cs = "n2::n4::n2ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      TOGGLED_FOLLOW: function (es, ed, stg) {
+      TOGGLED_FOLLOW: function (s, ed, stg) {
         let computed = null;
-        if (guards["!own profile"](es, ed, stg)) {
-          computed = actions["fetch session data"](es, ed, stg);
+        if (guards["!own profile"](s, ed, stg)) {
+          computed = actions["fetch session data"](s, ed, stg);
           cs = "n2::n4::n4ღFetching authentication";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1038,23 +1038,23 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n4::n1ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["'#/username' exact route"](es, ed, stg)) {
+        if (guards["'#/username' exact route"](s, ed, stg)) {
           computed = actions["fetch articles by username fetch profile render route loading screen update tab type"](
-            es,
+            s,
             ed,
             stg
           );
           cs = "n2::n4::n0ღUser profile";
-        } else if (guards["'#/username/favorite' route"](es, ed, stg)) {
+        } else if (guards["'#/username/favorite' route"](s, ed, stg)) {
           computed = actions[
             "fetch favorite articles by username fetch profile render route loading screen update tab type"
-          ](es, ed, stg);
+          ](s, ed, stg);
           cs = "n2::n4::n0ღUser profile";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1062,27 +1062,27 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n4ღProfile route": {
-      init: function (es, ed, stg) {
-        let computed = actions["fetch session data"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["fetch session data"](s, ed, stg);
         cs = "n2::n4::n1ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n3ღEditor route": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["otherwise"](es, ed, stg)) {
-          computed = actions["fetch session data reset editor route state"](es, ed, stg);
+        if (guards["otherwise"](s, ed, stg)) {
+          computed = actions["fetch session data reset editor route state"](s, ed, stg);
           cs = "n2::n3::n3ღFetching authentication";
-        } else if (guards["url = '#/editor/slug'"](es, ed, stg)) {
-          computed = actions["fetch article"](es, ed, stg);
+        } else if (guards["url = '#/editor/slug'"](s, ed, stg)) {
+          computed = actions["fetch article"](s, ed, stg);
           cs = "n2::n3::n5ღFetching article";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1090,159 +1090,159 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n3::n1ღEditing new article": {
-      CLCKED_PUBLISH: function (es, ed, stg) {
-        let computed = actions["render in-progress status update form data fetch session data"](es, ed, stg);
+      CLCKED_PUBLISH: function (s, ed, stg) {
+        let computed = actions["render in-progress status update form data fetch session data"](s, ed, stg);
         cs = "n2::n3::n4ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      ADDED_TAG: function (es, ed, stg) {
+      ADDED_TAG: function (s, ed, stg) {
         let computed = null;
-        if (guards["new tag"](es, ed, stg)) {
-          computed = actions["render tagList, reset tag field"](es, ed, stg);
+        if (guards["new tag"](s, ed, stg)) {
+          computed = actions["render tagList, reset tag field"](s, ed, stg);
           cs = "n2::n3::n1ღEditing new article";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
         return computed;
       },
-      REMOVED_TAG: function (es, ed, stg) {
-        let computed = actions["render tag list"](es, ed, stg);
+      REMOVED_TAG: function (s, ed, stg) {
+        let computed = actions["render tag list"](s, ed, stg);
         cs = "n2::n3::n1ღEditing new article";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      EDITED_TAG: function (es, ed, stg) {
-        let computed = actions["render tag field"](es, ed, stg);
+      EDITED_TAG: function (s, ed, stg) {
+        let computed = actions["render tag field"](s, ed, stg);
         cs = "n2::n3::n1ღEditing new article";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0ღFeeds": {
-      "clicked user feed": function (es, ed, stg) {
-        let computed = actions["reset pagination"](es, ed, stg);
+      "clicked user feed": function (s, ed, stg) {
+        let computed = actions["reset pagination"](s, ed, stg);
         cs = "n2::n0::n0ღFeeds";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "clicked tag": function (es, ed, stg) {
-        let computed = actions["reset pagination"](es, ed, stg);
+      "clicked tag": function (s, ed, stg) {
+        let computed = actions["reset pagination"](s, ed, stg);
         cs = "n2::n0::n0::n1ღFetching filtered articles";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "clicked global feed": function (es, ed, stg) {
-        let computed = actions["reset pagination"](es, ed, stg);
+      "clicked global feed": function (s, ed, stg) {
+        let computed = actions["reset pagination"](s, ed, stg);
         cs = "n2::n0::n0::n0ღFetching global feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0ღFeeds"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "like failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "like failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0ღFeeds"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike succeeded": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike succeeded": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0ღFeeds"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "unlike failed": function (es, ed, stg) {
-        let computed = actions["update liked, render"](es, ed, stg);
+      "unlike failed": function (s, ed, stg) {
+        let computed = actions["update liked, render"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0ღFeeds"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "clicked like": function (es, ed, stg) {
+      "clicked like": function (s, ed, stg) {
         let computed = null;
-        if (guards["articles fetched"](es, ed, stg)) {
+        if (guards["articles fetched"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
           cs = "n2::n0::n1ღFetching authentication";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
         return computed;
       },
-      init: function (es, ed, stg) {
-        let computed = actions["fetch session data"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["fetch session data"](s, ed, stg);
         cs = "n2::n0::n0::n4ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0::n0ღFetching global feed": {
-      "clicked page": function (es, ed, stg) {
-        let computed = actions["update pagination"](es, ed, stg);
+      "clicked page": function (s, ed, stg) {
+        let computed = actions["update pagination"](s, ed, stg);
         cs = "n2::n0::n0::n0ღFetching global feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles": function (es, ed, stg) {
-        let computed = actions["render articles"](es, ed, stg);
+      "fetched articles": function (s, ed, stg) {
+        let computed = actions["render articles"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0::n0ღFetching global feed"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles failed": function (es, ed, stg) {
-        let computed = actions["render articles errors"](es, ed, stg);
+      "fetched articles failed": function (s, ed, stg) {
+        let computed = actions["render articles errors"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0::n0ღFetching global feed"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["tags already fetched"](es, ed, stg)) {
-          computed = actions["fetch articles render loading"](es, ed, stg);
+        if (guards["tags already fetched"](s, ed, stg)) {
+          computed = actions["fetch articles render loading"](s, ed, stg);
           cs = "n2::n0::n0::n0::n2ღPending global feed articles";
-        } else if (guards["tags not fetched"](es, ed, stg)) {
-          computed = actions["fetch tags fetch articles render loading"](es, ed, stg);
+        } else if (guards["tags not fetched"](s, ed, stg)) {
+          computed = actions["fetch tags fetch articles render loading"](s, ed, stg);
           cs = "n2::n0::n0::n0::n1ღPending global feed";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1250,59 +1250,59 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n0::n0::n1ღFetching filtered articles": {
-      "clicked page": function (es, ed, stg) {
-        let computed = actions["update pagination"](es, ed, stg);
+      "clicked page": function (s, ed, stg) {
+        let computed = actions["update pagination"](s, ed, stg);
         cs = "n2::n0::n0::n1ღFetching filtered articles";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      init: function (es, ed, stg) {
-        let computed = actions["fetch filtered articles render loading"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["fetch filtered articles render loading"](s, ed, stg);
         cs = "n2::n0::n0::n1::n0ღPending filtered articles";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0::n3ღFetching user feed": {
-      "clicked page": function (es, ed, stg) {
-        let computed = actions["update pagination, fetch session data"](es, ed, stg);
+      "clicked page": function (s, ed, stg) {
+        let computed = actions["update pagination, fetch session data"](s, ed, stg);
         cs = "n2::n0::n0::n4ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles failed": function (es, ed, stg) {
-        let computed = actions["render articles errors"](es, ed, stg);
+      "fetched articles failed": function (s, ed, stg) {
+        let computed = actions["render articles errors"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0::n3ღFetching user feed"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched articles": function (es, ed, stg) {
-        let computed = actions["render articles"](es, ed, stg);
+      "fetched articles": function (s, ed, stg) {
+        let computed = actions["render articles"](s, ed, stg);
         cs = hs["deep"]["n2::n0::n0::n3ღFetching user feed"];
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         let computed = null;
-        if (guards["tags already fetched"](es, ed, stg)) {
-          computed = actions["fetch articles render loading"](es, ed, stg);
+        if (guards["tags already fetched"](s, ed, stg)) {
+          computed = actions["fetch articles render loading"](s, ed, stg);
           cs = "n2::n0::n0::n3::n2ღPending user feed articles";
-        } else if (guards["tags not fetched"](es, ed, stg)) {
-          computed = actions["fetch tags fetch articles render loading"](es, ed, stg);
+        } else if (guards["tags not fetched"](s, ed, stg)) {
+          computed = actions["fetch tags fetch articles render loading"](s, ed, stg);
           cs = "n2::n0::n0::n3::n1ღPending user feed";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1310,17 +1310,17 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n0::n0::n4ღFetching authentication": {
-      AUTH_CHECKED: function (es, ed, stg) {
+      AUTH_CHECKED: function (s, ed, stg) {
         let computed = null;
-        if (guards["isAuthenticated"](es, ed, stg)) {
-          computed = actions["update user"](es, ed, stg);
+        if (guards["isAuthenticated"](s, ed, stg)) {
+          computed = actions["update user"](s, ed, stg);
           cs = "n2::n0::n0::n3ღFetching user feed";
-        } else if (guards["!isAuthenticated"](es, ed, stg)) {
-          computed = actions["update user update (reset) pagination"](es, ed, stg);
+        } else if (guards["!isAuthenticated"](s, ed, stg)) {
+          computed = actions["update user update (reset) pagination"](s, ed, stg);
           cs = "n2::n0::n0::n0ღFetching global feed";
         }
         if (computed !== null) {
-          es = updateState(es, computed.updates);
+          es = updateState(s, computed.updates);
           hs = updateHistoryState(hs, getAncestors, cs);
         }
 
@@ -1328,7 +1328,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n0ღHome route": {
-      init: function (es, ed, stg) {
+      init: function (s, ed, stg) {
         cs = "n2::n0::n0ღFeeds"; // No action, only cs changes!
         hs = updateHistoryState(hs, getAncestors, cs);
 
@@ -1336,94 +1336,94 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
     "n2::n2ღSign in route": {
-      init: function (es, ed, stg) {
-        let computed = actions["reset sign in route state fetch session data"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["reset sign in route state fetch session data"](s, ed, stg);
         cs = "n2::n2::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n2::n1ღForm entry": {
-      CLCKED_SIGN_IN: function (es, ed, stg) {
-        let computed = actions["render in-progress status update form data fetch session data"](es, ed, stg);
+      CLCKED_SIGN_IN: function (s, ed, stg) {
+        let computed = actions["render in-progress status update form data fetch session data"](s, ed, stg);
         cs = "n2::n2::n4ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n1ღSign up route": {
-      init: function (es, ed, stg) {
-        let computed = actions["reset sign up route state fetch session data"](es, ed, stg);
+      init: function (s, ed, stg) {
+        let computed = actions["reset sign up route state fetch session data"](s, ed, stg);
         cs = "n2::n1::n3ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n1::n1ღForm entry": {
-      CLCKED_SIGN_UP: function (es, ed, stg) {
-        let computed = actions["render in-progress status update form data fetch session data"](es, ed, stg);
+      CLCKED_SIGN_UP: function (s, ed, stg) {
+        let computed = actions["render in-progress status update form data fetch session data"](s, ed, stg);
         cs = "n2::n1::n4ღFetching authentication";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0::n1::n0ღPending filtered articles": {
-      "fetched filtered articles": function (es, ed, stg) {
-        let computed = actions["render filtered articles"](es, ed, stg);
+      "fetched filtered articles": function (s, ed, stg) {
+        let computed = actions["render filtered articles"](s, ed, stg);
         cs = "n2::n0::n0::n1::n1ღFetched filtered articles";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched filtered articles failed": function (es, ed, stg) {
-        let computed = actions["render fetched failure"](es, ed, stg);
+      "fetched filtered articles failed": function (s, ed, stg) {
+        let computed = actions["render fetched failure"](s, ed, stg);
         cs = "n2::n0::n0::n1::n2ღFailed fetch filtered articles";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0::n3::n1ღPending user feed": {
-      "fetched tags": function (es, ed, stg) {
-        let computed = actions["render tags update tags fetched"](es, ed, stg);
+      "fetched tags": function (s, ed, stg) {
+        let computed = actions["render tags update tags fetched"](s, ed, stg);
         cs = "n2::n0::n0::n3::n1ღPending user feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched tags failed": function (es, ed, stg) {
-        let computed = actions["render tag errors"](es, ed, stg);
+      "fetched tags failed": function (s, ed, stg) {
+        let computed = actions["render tag errors"](s, ed, stg);
         cs = "n2::n0::n0::n3::n1ღPending user feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
     "n2::n0::n0::n0::n1ღPending global feed": {
-      "fetched tags": function (es, ed, stg) {
-        let computed = actions["render tags update tags fetched"](es, ed, stg);
+      "fetched tags": function (s, ed, stg) {
+        let computed = actions["render tags update tags fetched"](s, ed, stg);
         cs = "n2::n0::n0::n0::n1ღPending global feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
-      "fetched tags failed": function (es, ed, stg) {
-        let computed = actions["render tag errors"](es, ed, stg);
+      "fetched tags failed": function (s, ed, stg) {
+        let computed = actions["render tag errors"](s, ed, stg);
         cs = "n2::n0::n0::n0::n1ღPending global feed";
-        es = updateState(es, computed.updates);
+        es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;

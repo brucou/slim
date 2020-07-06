@@ -5,16 +5,31 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
-//   "isNumber": function (){},
-//   "not(isNumber)": function (){},
+//   "isNumber": function (extendedState, eventData, settings){},
+//   "not(isNumber)": function (extendedState, eventData, settings){},
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logNumber": function (){},
-//   "logOther": function (){},
+//   "logNumber": function (extendedState, eventData, settings){},
+//   "logOther": function (extendedState, eventData, settings){},
 // };
 // ----------------
+
+false;
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -74,7 +89,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       // cs, es, hs have been updated in place by the handler
       // If transition, but no guards fulfilled => null, else => computed outputs
-      return computed === null ? null : computed.outputs;
+      return computed === null ? [null] : computed.outputs;
     }
     // Event is not accepted by the machine
     else return null;

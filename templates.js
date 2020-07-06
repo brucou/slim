@@ -1,15 +1,28 @@
 const { resolve } = require('./helpers');
 const { INIT_STATE, INIT_EVENT, DEEP, SHALLOW, ACTION_IDENTITY } = require('kingly');
 
-const templateIntro = (usesHistoryStates, hasAutomaticEvents, nextEventMap) => ([[
-  // `var INIT_STATE = "${INIT_STATE}";`,
-  // `var INIT_EVENT = "${INIT_EVENT}";`,
-  hasAutomaticEvents && `var nextEventMap = ${JSON.stringify(nextEventMap)}` || "",
-  // usesHistoryStates && `
-  // var DEEP = "${DEEP}";
-  // var SHALLOW = "${SHALLOW}";` || "",
+const implDoStr = `
+function chain(arrFns, actions) {
+  return function chain_(s, ed, stg) {
+    return (
+      arrFns.reduce(function(acc, fn) {
+        var r = actions[fn](s, ed, stg);
+
+        return {
+          updates: acc.updates.concat(r.updates),
+          outputs: acc.outputs.concat(r.outputs),
+        };
+      }, { updates: [], outputs: [] })
+    );
+  };
+}
+`;
+
+const templateIntro = ({usesHistoryStates, hasAutomaticEvents, nextEventMap, hasChainedActions}) => ([[
+  hasAutomaticEvents && `var nextEventMap = ${JSON.stringify(nextEventMap)}` || '',
   `\n`,
-  ].join(''),
+].join(''),
+  hasChainedActions && implDoStr,
   usesHistoryStates && `
 function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === ${JSON.stringify(INIT_STATE)}) {
@@ -32,46 +45,100 @@ function updateHistoryState(history, getAncestors, state_from_name) {
   ``]).join('\n');
 
 const transitionWithoutGuard = (action, to, usesHistoryStates) => {
-  const actionName = action.slice(3, -3);
-  const isActionIdentity = actionName === 'ACTION_IDENTITY';
-  const computed = isActionIdentity ? ACTION_IDENTITY(): null;
+  // We remove the actions with empty names
+  // Those means don't do anything
+  const actionNames = action.map(a => a.slice(3, -3)).filter(Boolean);
+  // console.warn(`transitionWithoutGuard > actionNames`, actionNames)
+  let computedStr = '';
+  let isActionIdentity = false;
+  if (actionNames.length === 0) {
+    isActionIdentity = true;
+  }
+  else if (actionNames.length === 1) {
+    computedStr = `let computed = actions["${actionNames[0]}"](s, ed, stg);`;
+  }
+  else  {
+    computedStr = `let computed = chain(${JSON.stringify(actionNames)}, actions)(s, ed, stg);`;
+  }
 
-    return [
+  return [
     `function (s, ed, stg){`,
-      isActionIdentity
-        ? `
+    isActionIdentity
+      ? `
         cs = ${resolve(to)}; // No action, only cs changes!
         `.trim()
       : `
-      let computed = actions[\"${action.slice(3, -3)}\"](s, ed, stg);
+        ${computedStr}
         cs = ${resolve(to)};
         es = updateState(s, computed.updates);
       `.trim(),
-    // ``,
-    // `        cs = ${resolve(to)};`,
-    // `es = updateState(es, computed.updates);`,
     usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs); \n` || ``,
-      isActionIdentity ? `return ${JSON.stringify(computed)}`: `return computed`,
+    isActionIdentity ? `return ${JSON.stringify(ACTION_IDENTITY())}` : `return computed`,
     `},`,
   ].join('\n');
 };
 
+
+function transitionWithGuards(guards, usesHistoryStates) {
+  let predicateStr = "";
+  let actionStr  = "";
+  return [
+    `function (s, ed, stg){`,
+    `let computed = null;`,
+    guards.map(({ predicate: _predicateList, to, action: _actionList }, index) => {
+      const predicateList = _predicateList.map(x => x.slice(3, -3));
+      // We remove the actions entered in yed with empty strings (edge case)
+      const actionList= _actionList.map(x => x.slice(3, -3)).filter(Boolean);
+      // console.warn(`predicateList `, predicateList);
+      // console.warn(`actionList`, actionList);
+      if (predicateList.length === 1) {
+        predicateStr = `guards["${predicateList[0]}"](s, ed, stg)`
+      }
+      else {
+        // We have a guard if we arrive here => predicateList.length > 1
+        predicateStr = `${JSON.stringify(predicateList)}.every(p => guards[p](s, ed, stg))`
+      }
+
+      if (actionList.length === 0) {
+        actionStr = `computed =  ${JSON.stringify(ACTION_IDENTITY())};`
+      }
+      else if (actionList.length === 1) {
+        actionStr = `computed = actions["${actionList[0]}"](s, ed, stg);`
+      }
+      else {
+        // predicateList.length > 1
+        actionStr = `computed = chain(${JSON.stringify(actionList)}, actions)(s, ed, stg);`
+      }
+
+        return `${index ? 'else if' : 'if'} (${predicateStr}) {${actionStr} cs = ${resolve(to)};}`;
+    }).join('\n'),
+    `if (computed !== null) {
+                      es = updateState(s, computed.updates);`,
+    usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs);` || '',
+    `                  }
+                        
+                    return computed
+                  `,
+    `},`,
+  ].join('\n');
+}
+
 const isGraphWithoutCompoundStates = stateAncestors => Object.keys(stateAncestors).length === 0;
 
-const mainLoop = (nextEventMap, hasAutomaticEvents, stateAncestors) => (`
+const mainLoop = ({ nextEventMap, hasAutomaticEvents, stateAncestors }) => (`
 function process(event){
   var eventLabel = Object.keys(event)[0];
   var eventData = event[eventLabel];
 ${isGraphWithoutCompoundStates(stateAncestors)
-? `
+  ? `
     var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 `.trim()
-:`
+  : `
   var controlStateHandlingEvent = [cs].concat(getAncestors(cs)||[]).find(function(controlState){
     return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
   });
-`.trim()   
-}   
+`.trim()
+  }   
 
   if (controlStateHandlingEvent) {
     // Run the handler
@@ -81,14 +148,14 @@ ${isGraphWithoutCompoundStates(stateAncestors)
     ${hasAutomaticEvents ? `
     return computed === null
     // If transition, but no guards fulfilled => null, else 
-     ? null
+     ? [null]
      : nextEventMap[cs] == null
        ? computed.outputs
     // Run automatic transition if any
        : computed.outputs.concat(process({[nextEventMap[cs]]: eventData}))
     `.trim() : `
     // If transition, but no guards fulfilled => null, else => computed outputs
-    return computed === null ? null : computed.outputs;
+    return computed === null ? [null] : computed.outputs;
     `.trim()}
   }
   // Event is not accepted by the machine
@@ -114,9 +181,11 @@ const cjsExports = `
 module.exports = {
   templateIntro,
   transitionWithoutGuard,
+  transitionWithGuards,
   mainLoop,
+  ImplDoStr: implDoStr,
   esmExports,
-  cjsExports
+  cjsExports,
 };
 
 

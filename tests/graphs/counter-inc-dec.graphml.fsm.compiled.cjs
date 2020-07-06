@@ -5,14 +5,47 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
+//   "is it": function (extendedState, eventData, settings){},
+//   "is it not": function (extendedState, eventData, settings){},
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "increment counter, render": function (){},
-//   "decrement counter, render": function (){},
+//   "increment counter": function (extendedState, eventData, settings){},
+//   "render": function (extendedState, eventData, settings){},
+//   "decrement counter": function (extendedState, eventData, settings){},
+//   "render some more": function (extendedState, eventData, settings){},
 // };
 // ----------------
+
+function chain(arrFns, actions) {
+  return function chain_(s, ed, stg) {
+    return arrFns.reduce(
+      function (acc, fn) {
+        var r = actions[fn](s, ed, stg);
+
+        return {
+          updates: acc.updates.concat(r.updates),
+          outputs: acc.outputs.concat(r.outputs),
+        };
+      },
+      { updates: [], outputs: [] }
+    );
+  };
+}
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -34,14 +67,20 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     n1ღidle: {
       "click inc": function (s, ed, stg) {
-        let computed = actions["increment counter, render"](s, ed, stg);
-        cs = "n1ღidle";
-        es = updateState(s, computed.updates);
+        let computed = null;
+        if (["is it", "is it not"].every((p) => guards[p](s, ed, stg))) {
+          computed = chain(["increment counter", "render"], actions)(s, ed, stg);
+          cs = "n1ღidle";
+        }
+        if (computed !== null) {
+          es = updateState(s, computed.updates);
+        }
 
         return computed;
       },
+
       "click dec": function (s, ed, stg) {
-        let computed = actions["decrement counter, render"](s, ed, stg);
+        let computed = chain(["decrement counter", "render", "render some more"], actions)(s, ed, stg);
         cs = "n1ღidle";
         es = updateState(s, computed.updates);
 
@@ -60,7 +99,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       // cs, es, hs have been updated in place by the handler
       // If transition, but no guards fulfilled => null, else => computed outputs
-      return computed === null ? null : computed.outputs;
+      return computed === null ? [null] : computed.outputs;
     }
     // Event is not accepted by the machine
     else return null;

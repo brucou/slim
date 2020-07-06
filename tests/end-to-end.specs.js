@@ -47,18 +47,12 @@ describe('End-to-end graphml to kingly - one transition per edge', function() {
       initialExtendedState: { n: 0 },
       actionFactories,
       guards,
-      // events,
-      // states,
-      // transitions: getKinglyTransitions({actionFactories, guards}),
       updateState,
     }, settings);
     const fsm2 = createStateMachine({
       initialExtendedState: { n: '' },
       actionFactories,
       guards,
-      // events,
-      // states,
-      // transitions: getKinglyTransitions({actionFactories, guards}),
       updateState,
     }, settings);
 
@@ -104,18 +98,12 @@ describe('End-to-end graphml to kingly - one transition per edge', function() {
       initialExtendedState: { shouldReturnToA: false },
       actionFactories,
       guards,
-      // events,
-      // states,
-      // transitions: getKinglyTransitions({ actionFactories, guards }),
     };
     const fsmDef2 = {
       updateState,
       initialExtendedState: { shouldReturnToA: true },
       actionFactories,
       guards,
-      // events,
-      // states,
-      // transitions: getKinglyTransitions({ actionFactories, guards }),
     };
 
     const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
@@ -1099,91 +1087,189 @@ describe('End-to-end graphml to kingly - one transition per edge', function() {
 });
 
 describe('End-to-end graphml to kingly - several transitions per edge', function() {
-  describe('counter-inc-dec', function() {
-  // run the script on the test file
-  const graphMlFile = './graphs/counter-inc-dec.graphml';
-  try {
-    execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
-  }
-  catch (err) {
-    assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
-  }
+  describe('counter-inc-dec - both guards pass', function() {
+    // run the script on the test file
+    const graphMlFile = './graphs/counter-inc-dec.graphml';
+    try {
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
+    }
+    catch (err) {
+      assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
+    }
 
-  // require the js file
-  const { createStateMachine } = require(`${graphMlFile}.fsm.compiled.cjs`);
+    // require the js file
+    const { createStateMachine } = require(`${graphMlFile}.fsm.compiled.cjs`);
 
-  // Build the machine
-  const guards = {};
-  const actionFactories = {
-    "increment counter, render": (s, e, stg) => ({updates: [+1], outputs:[s+1]}),
-    "decrement counter, render": (s, e, stg) => ({updates: [-1], outputs:[s-1]}),
-  };
-  const event1 = {"click inc": void 0};
-  const event2 = {"click dec": void 0};
-  const eventSpace = [event1, event2, {dummy:0}];
+    // Build the machine
+    const guards = {
+      "is it": (s, e, stg) => true,
+      "is it not": (s, e, stg) => true,
+    };
+    const actionFactories = {
+      "increment counter": (s, e, stg) => ({updates: [+1], outputs:[s+1]}),
+      "decrement counter": (s, e, stg) => ({updates: [-1], outputs:[s-1]}),
+      "render": (s, e, stg) => ({updates: [], outputs:[`rendered`]}),
+      "render some more": (s, e, stg) => ({updates: [], outputs:[]}),
+    };
+    const event1 = {"click inc": +1};
+    const event2 = {"click dec": -1};
+    const eventSpace = [event1, event2, {dummy:0}];
 
-  const fsmDef1 = {
-    updateState: (s, u) => {
-      return u.reduce((a,b) => a+b, s)
-    },
-    initialExtendedState: 0,
-    actionFactories,
-    guards,
-  };
+    const fsmDef1 = {
+      updateState: (s, u) => {
+        return u.reduce((a,b) => a+b, s)
+      },
+      initialExtendedState: 0,
+      actionFactories,
+      guards,
+    };
 
-  const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
-  const cases = inputSpace.map(scenario => {
-    return [eventSpace[scenario[0]], eventSpace[scenario[1]], eventSpace[scenario[2]]];
-  });
+    const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
+    const cases = inputSpace.map(scenario => {
+      return [eventSpace[scenario[0]], eventSpace[scenario[1]], eventSpace[scenario[2]]];
+    });
     const expected1 = [
       // [event1, event1, event1]
-      [[1], [2], [3]],
-      [[1], [2], [1]],
-      [[1], [2], null],
+      [[1, "rendered"], [2, "rendered"], [3, "rendered"]],
+      [[1, "rendered"], [2, "rendered"], [1, "rendered"]],
+      [[1, "rendered"], [2, "rendered"], null],
       // [event1, event2, event1]
-      [[1], [0], [1]],
-      [[1], [0], [-1]],
-      [[1], [0], null],
+      [[1, "rendered"], [0, "rendered"], [1, "rendered"]],
+      [[1, "rendered"], [0, "rendered"], [-1, "rendered"]],
+      [[1, "rendered"], [0, "rendered"], null],
       // // [event1, event3, event1]
-      [[1], null, [2]],
-      [[1], null, [0]],
-      [[1], null, null],
+      [[1, "rendered"], null, [2, "rendered"]],
+      [[1, "rendered"], null, [0, "rendered"]],
+      [[1, "rendered"], null, null],
       // // [event2, event1, event1]
-      [[-1], [0], [1]],
-      [[-1], [0], [-1]],
-      [[-1], [0], null],
+      [[-1, "rendered"], [0, "rendered"], [1, "rendered"]],
+      [[-1, "rendered"], [0, "rendered"], [-1, "rendered"]],
+      [[-1, "rendered"], [0, "rendered"], null],
       // // [event2, event2, event1]
-      [[-1], [-2], [-1]],
-      [[-1], [-2], [-3]],
-      [[-1], [-2], null],
+      [[-1, "rendered"], [-2, "rendered"], [-1, "rendered"]],
+      [[-1, "rendered"], [-2, "rendered"], [-3, "rendered"]],
+      [[-1, "rendered"], [-2, "rendered"], null],
       // // [event2, event3, event1]
-      [[-1], null, [0]],
-      [[-1], null, [-2]],
-      [[-1], null, null],
+      [[-1, "rendered"], null, [0, "rendered"]],
+      [[-1, "rendered"], null, [-2, "rendered"]],
+      [[-1, "rendered"], null, null],
       // // [event3, event1, event1]
-      [null, [1], [2]],
-      [null, [1], [0]],
-      [null, [1], null],
+      [null, [1, "rendered"], [2, "rendered"]],
+      [null, [1, "rendered"], [0, "rendered"]],
+      [null, [1, "rendered"], null],
       // // [event3, event2, event1]
-      [null, [-1], [0]],
-      [null, [-1], [-2]],
-      [null, [-1], null],
+      [null, [-1, "rendered"], [0, "rendered"]],
+      [null, [-1, "rendered"], [-2, "rendered"]],
+      [null, [-1, "rendered"], null],
       // // [event3, event3, event1]
-      [null, null, [1]],
-      [null, null, [-1]],
+      [null, null, [1, "rendered"]],
+      [null, null, [-1, "rendered"]],
       [null, null, null],
     ];
 
-  it('runs the machine as per the graph', function() {
-    cases.forEach((scenario, index) => {
-      // Allows to pick some specific index for easier debugging
-      // if (index > 20) return
-      const fsm = createStateMachine(fsmDef1, settings);
-      const outputs = scenario.map(fsm);
-      assert.deepEqual(outputs, expected1[index], prettyFormat(scenario));
+    it('runs the machine as per the graph', function() {
+      cases.forEach((scenario, index) => {
+        // Allows to pick some specific index for easier debugging
+        // if (index > 20) return
+        const fsm = createStateMachine(fsmDef1, settings);
+        const outputs = scenario.map(fsm);
+        assert.deepEqual(outputs, expected1[index], prettyFormat(scenario));
+      });
     });
+
+
   });
 
+  describe('counter-inc-dec - first guard fail', function() {
+    // run the script on the test file
+    const graphMlFile = './graphs/counter-inc-dec.graphml';
+    try {
+      execSync(`slim ${graphMlFile}`, [], { cwd: TEST_DIR });
+    }
+    catch (err) {
+      assert.ok(true, false, `Failed to execute the conversion on file ${graphMlFile}`);
+    }
 
-});
+    // require the js file
+    const { createStateMachine } = require(`${graphMlFile}.fsm.compiled.cjs`);
+
+    // Build the machine
+    const guards = {
+      "is it": (s, e, stg) => false,
+      "is it not": (s, e, stg) => true,
+    };
+    const actionFactories = {
+      "increment counter": (s, e, stg) => ({updates: [+1], outputs:[s+1]}),
+      "decrement counter": (s, e, stg) => ({updates: [-1], outputs:[s-1]}),
+      "render": (s, e, stg) => ({updates: [], outputs:[`rendered`]}),
+      "render some more": (s, e, stg) => ({updates: [], outputs:[]}),
+    };
+    const event1 = {"click inc": +1};
+    const event2 = {"click dec": -1};
+    const eventSpace = [event1, event2, {dummy:0}];
+
+    const fsmDef1 = {
+      updateState: (s, u) => {
+        return u.reduce((a,b) => a+b, s)
+      },
+      initialExtendedState: 0,
+      actionFactories,
+      guards,
+    };
+
+    const inputSpace = cartesian([0, 1, 2], [0, 1, 2], [0, 1, 2]);
+    const cases = inputSpace.map(scenario => {
+      return [eventSpace[scenario[0]], eventSpace[scenario[1]], eventSpace[scenario[2]]];
+    });
+    const expected1 = [
+      // [event1, event1, event1]
+      [[null], [null], [null]],
+      [[null], [null], [-1, "rendered"]],
+      [[null], [null], null],
+      // [event1, event2, event1]
+      [[null], [-1, "rendered"], [null]],
+      [[null], [-1, "rendered"], [-2, "rendered"]],
+      [[null], [-1, "rendered"], null],
+      // // [event1, event3, event1]
+      [[null], null, [null]],
+      [[null], null, [-1, "rendered"]],
+      [[null], null, null],
+      // // [event2, event1, event1]
+      [[-1, "rendered"], [null], [null]],
+      [[-1, "rendered"], [null], [-2, "rendered"]],
+      [[-1, "rendered"], [null], null],
+      // // [event2, event2, event1]
+      [[-1, "rendered"], [-2, "rendered"], [null]],
+      [[-1, "rendered"], [-2, "rendered"], [-3, "rendered"]],
+      [[-1, "rendered"], [-2, "rendered"], null],
+      // // [event2, event3, event1]
+      [[-1, "rendered"], null, [null]],
+      [[-1, "rendered"], null, [-2, "rendered"]],
+      [[-1, "rendered"], null, null],
+      // // [event3, event1, event1]
+      [null, [null], [null]],
+      [null, [null], [-1, "rendered"]],
+      [null, [null], null],
+      // // [event3, event2, event1]
+      [null, [-1, "rendered"], [null]],
+      [null, [-1, "rendered"], [-2, "rendered"]],
+      [null, [-1, "rendered"], null],
+      // // [event3, event3, event1]
+      [null, null, [null]],
+      [null, null, [-1, "rendered"]],
+      [null, null, null],
+    ];
+
+    it('runs the machine as per the graph', function() {
+      cases.forEach((scenario, index) => {
+        // Allows to pick some specific index for easier debugging
+        // if (index > 20) return
+        const fsm = createStateMachine(fsmDef1, settings);
+        const outputs = scenario.map(fsm);
+        assert.deepEqual(outputs, expected1[index], prettyFormat(scenario));
+      });
+    });
+
+
+  });
 });

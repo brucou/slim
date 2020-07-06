@@ -5,22 +5,37 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
-//   "condition1": function (){},
-//   "condition2": function (){},
-//   "condition3": function (){},
-//   "shouldReturnToA": function (){},
+//   "condition1": function (extendedState, eventData, settings){},
+//   "condition2": function (extendedState, eventData, settings){},
+//   "condition3": function (extendedState, eventData, settings){},
+//   "shouldReturnToA": function (extendedState, eventData, settings){},
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logAtoTemp1": function (){},
-//   "logAtoTemp2": function (){},
-//   "logAtoDone": function (){},
-//   "logTemp1toA": function (){},
-//   "logTemp2toA": function (){},
+//   "logAtoTemp1": function (extendedState, eventData, settings){},
+//   "logAtoTemp2": function (extendedState, eventData, settings){},
+//   "logAtoDone": function (extendedState, eventData, settings){},
+//   "logTemp1toA": function (extendedState, eventData, settings){},
+//   "logTemp2toA": function (extendedState, eventData, settings){},
 // };
 // ----------------
 var nextEventMap = { n2ღTemp1: "", n3ღTemp2: "", n4ღDone: "" };
+
+false;
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -105,7 +120,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       // cs, es, hs have been updated in place by the handler
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
-          null
+          [null]
         : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any

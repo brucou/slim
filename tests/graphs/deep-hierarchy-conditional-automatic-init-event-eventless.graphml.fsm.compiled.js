@@ -5,24 +5,37 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
-//   "isNumber": function (){},
-//   "not(isNumber)": function (){},
-//   "shouldReturnToA": function (){},
+//   "isNumber": function (extendedState, eventData, settings){},
+//   "not(isNumber)": function (extendedState, eventData, settings){},
+//   "shouldReturnToA": function (extendedState, eventData, settings){},
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logAtoGroup1": function (){},
-//   "logGroup1toGroup2": function (){},
-//   "logGroup2toGroup3": function (){},
-//   "logGroup3BtoGroup4": function (){},
-//   "logGroup3toB": function (){},
-//   "logGroup3toC": function (){},
-//   "logAtoB": function (){},
-//   "logAtoC": function (){},
-//   "logBtoD": function (){},
-//   "logCtoD": function (){},
-//   "logDtoA": function (){},
+//   "logAtoGroup1": function (extendedState, eventData, settings){},
+//   "logGroup1toGroup2": function (extendedState, eventData, settings){},
+//   "logGroup2toGroup3": function (extendedState, eventData, settings){},
+//   "logGroup3BtoGroup4": function (extendedState, eventData, settings){},
+//   "logGroup3toB": function (extendedState, eventData, settings){},
+//   "logGroup3toC": function (extendedState, eventData, settings){},
+//   "logAtoB": function (extendedState, eventData, settings){},
+//   "logAtoC": function (extendedState, eventData, settings){},
+//   "logBtoD": function (extendedState, eventData, settings){},
+//   "logCtoD": function (extendedState, eventData, settings){},
+//   "logDtoA": function (extendedState, eventData, settings){},
 // };
 // ----------------
 var nextEventMap = {
@@ -33,6 +46,8 @@ var nextEventMap = {
   "n2::n2::n1::n3ღGroup 4": "init",
   "n2::n2::n1::n3::n3ღD": "",
 };
+
+false;
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
@@ -136,6 +151,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
         return computed;
       },
+
       event2: function (s, ed, stg) {
         let computed = actions["logAtoC"](s, ed, stg);
         cs = "n2::n2::n1::n3::n2ღC";
@@ -198,7 +214,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       // cs, es, hs have been updated in place by the handler
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
-          null
+          [null]
         : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any

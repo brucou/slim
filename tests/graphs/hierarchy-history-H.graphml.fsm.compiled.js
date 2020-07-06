@@ -5,19 +5,33 @@
 // Using natural language sentences for labels in the graph is valid
 // guard and action functions name still follow JavaScript rules though
 // -----Guards------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns Boolean
+ */
 // const guards = {
 // };
 // -----Actions------
+/**
+ * @param {E} extendedState
+ * @param {D} eventData
+ * @param {X} settings
+ * @returns {{updates: U[], outputs: O[]}}
+ * (such that updateState:: E -> U[] -> E)
+ */
 // const actions = {
-//   "logDtoGroup1H": function (){},
-//   "logBtoD": function (){},
-//   "logBtoC": function (){},
-//   "logCtoD": function (){},
-//   "logGroup1toC": function (){},
+//   "logDtoGroup1H": function (extendedState, eventData, settings){},
+//   "logBtoD": function (extendedState, eventData, settings){},
+//   "logBtoC": function (extendedState, eventData, settings){},
+//   "logCtoD": function (extendedState, eventData, settings){},
+//   "logGroup1toC": function (extendedState, eventData, settings){},
 // };
 // ----------------
 var nextEventMap = { n1ღD: "", "n2ღGroup 1": "init" };
 
+false;
 function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === "nok") {
     return history;
@@ -62,6 +76,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
         return { outputs: [], updates: [] };
       },
+
       init: function (s, ed, stg) {
         let computed = actions["logGroup1toC"](s, ed, stg);
         cs = "n2::n1ღC";
@@ -98,6 +113,7 @@ function createStateMachine(fsmDefForCompile, stg) {
 
         return computed;
       },
+
       event2: function (s, ed, stg) {
         let computed = actions["logBtoC"](s, ed, stg);
         cs = "n2::n1ღC";
@@ -132,7 +148,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       // cs, es, hs have been updated in place by the handler
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
-          null
+          [null]
         : nextEventMap[cs] == null
         ? computed.outputs
         : // Run automatic transition if any

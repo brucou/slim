@@ -1,24 +1,4 @@
-- implement that grammar for multi-lines transitions in yed
-```stylus
-MAIN -> OneTransitionLabel                             {% d => d[0] %}
-| MultipleTransitionLabel                              {% d => d[0] %}
-MultipleTransitionLabel -> ("|" OneTransitionLabel):+  {% d => d[0].map(x => x[1]) %}
-OneTransitionLabel ->
-  EventClause "[" GuardClause "]" _ "/" ActionsClause  {% d => ({event: d[0][0].join(''), guard: d[2][0].join(''), actions: d[6][0].join('')}) %}
-| EventClause "[" GuardClause "]" _                    {% d => ({event: d[0][0].join(''), guard: d[2][0].join(''), actions: ""}) %}
-| EventClause "/" ActionsClause                        {% d => ({event: d[0][0].join(''), guard: "", actions: d[2][0].join('')}) %}
-| EventClause                                          {% d => ({event: d[0][0].join(''), guard: "", actions: ""}) %}
-| "[" GuardClause "]" _ "/" ActionsClause              {% d => ({event: "", guard: d[1][0].join(''), actions: d[5][0].join('')}) %}
-| "/" ActionsClause                                    {% d => ({event: "", guard: "", actions: d[1][0].join('')}) %}
-| "[" GuardClause "]"                                  {% d => ({event: "", guard: d[1][0].join(''), actions: ""}) %}
-
-EventClause -> [^\/\[\]\|]:+
-GuardClause -> [^\[\]]:*
-ActionsClause -> [^\/\|]:*
-StringLiteral -> [\w]:+
-_ -> [\s]:*
-```
-
+- there is a `false;` hanging in compiled files!!!
 - also NTH save the transition read from graphml into a JS array so it can be tested in the browser in case we are not so sure about the output from the compiler and want to double check.
 
 - clean code (cruft from yed2Kingly there) but that is fairly low priority
@@ -33,3 +13,33 @@ _ -> [\s]:*
 - I would save a lot on large files by not keeping track of the useless history (history of compound state which do not have H* in their up or down? hierarchy)
   - I know which one to remove!
   - those where I have cs = hs["deep"]["n2::n0::n0ღFeeds"]; they are the only one using hs
+- can also optimize by mapping all state labels to a number, and use arrays for event handlers, parentMaps, history! That should save a lot of repetition, specially parentMap. Add comments with full name on state for debugging in event handlers
+  - optimizing history then becomes a minor issue
+  - save >10% (3.3KB to 3KB for realworld!)
+  - actions could also be attached to an index, all copied from comments?
+
+```js
+actions = [
+  ["my action", function adadas(){}],
+  ["asdadasd", function adadas(){}],
+  ...
+]
+```
+
+and instead of `actions['my action']`, use `actions[indexOf('my action'')][1]`
+
+that may cause some errors though maybe in an iterative process. If nohing is deleted ok, but if a state/transition is rmoved, then readded, that transition could change index, and all other trnsitions may go up one index. As ew do not check that the index correspond to the label (we assume it does). SO DON"T DO IT. Price is the size of all labels, I can live with that
+DOC: ADR!
+  
+- change let computed = ... for var computed = ...
+- maintain a graphml.bak:
+  - slim *.graphml -> .graphml.decode (.graphml.decode -> .bak), .compiled.js, .compiled.cjs
+  - graphml.decode has events, guards, transitions, actions, state list, state hierarchy in an export cjs way
+  - then we can do the diff by simple requiring old, computing new and ramda differenceWith
+    - na, just do a diff of the array at the moment
+    - ~~same from, event, to:~~ 
+      - same guard/action but from a single record to one of a multiple record (dearrayize transitions)
+      - same guard/!action only change of guard label (same action, index, everything)
+      - only change of index (consider it not a change but a shuffle) between guards, or transition index
+
+- make warning if same action several time?
