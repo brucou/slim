@@ -74,7 +74,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     {
       "click inc": function (s, ed, stg) {
         let computed = null;
-        if (["is it", "is it not"].every((p) => guards[p](s, ed, stg))) {
+        if (guards["is it"](s, ed, stg) && guards["is it not"](s, ed, stg)) {
           computed = chain(["increment counter", "render"], actions)(s, ed, stg);
           // Transition to "idleღn1";
           cs = 1;

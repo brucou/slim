@@ -101,7 +101,8 @@ function transitionWithGuards(guards, usesHistoryStates, stateIndexList) {
       }
       else {
         // We have a guard if we arrive here => predicateList.length > 1
-        predicateStr = `${JSON.stringify(predicateList)}.every(p => guards[p](s, ed, stg))`
+        predicateStr = predicateList.map(p => `guards["${p}"](s, ed, stg)`).join(`&&`);
+        // predicateStr = `${JSON.stringify(predicateList)}.every(p => guards[p](s, ed, stg))`
       }
 
       if (actionList.length === 0) {
