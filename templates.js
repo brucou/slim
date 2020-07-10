@@ -22,7 +22,7 @@ const templateIntro = ({usesHistoryStates, hasAutomaticEvents, nextEventMap, has
   hasAutomaticEvents && `var nextEventMap = ${JSON.stringify(nextEventMap)}` || '',
   `\n`,
 ].join(''),
-  hasChainedActions && implDoStr,
+  hasChainedActions && implDoStr || "",
   usesHistoryStates && `
 function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === ${JSON.stringify(INIT_STATE)}) {

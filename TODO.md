@@ -13,11 +13,8 @@
 - I would save a lot on large files by not keeping track of the useless history (history of compound state which do not have H* in their up or down? hierarchy)
   - I know which one to remove!
   - those where I have cs = hs["deep"]["n2::n0::n0ღFeeds"]; they are the only one using hs
-- can also optimize by mapping all state labels to a number, and use arrays for event handlers, parentMaps, history! That should save a lot of repetition, specially parentMap. Add comments with full name on state for debugging in event handlers
-  - optimizing history then becomes a minor issue
-  - save >10% (3.3KB to 3KB for realworld!)
-  - actions could also be attached to an index, all copied from comments?
 
+  - actions could also be attached to an index, all copied from comments?
 ```js
 actions = [
   ["my action", function adadas(){}],
@@ -43,10 +40,3 @@ DOC: ADR!
       - only change of index (consider it not a change but a shuffle) between guards, or transition index
 
 - make warning if same action several time?
-
-// getAncestors
-// cs init 0
-// eevent handlers is array
-// nextEventMap is array, -1 instead of null
-// be careful with controlStateHandlingEvent = 0, make sure find does not reurn -
-// replace .find (IE does not have it) by a custom function maybe behind a flag -IE

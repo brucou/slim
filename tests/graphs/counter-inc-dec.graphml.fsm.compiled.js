@@ -96,6 +96,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   ];
+
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];

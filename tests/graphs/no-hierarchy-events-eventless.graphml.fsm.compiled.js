@@ -36,8 +36,6 @@
 // ------------------------------
 var nextEventMap = [-1, -1, -1, -1, ""];
 
-false;
-
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
   var guards = fsmDefForCompile.guards;
@@ -113,6 +111,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   ];
+
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];

@@ -35,7 +35,6 @@
 // ------------------------------
 var nextEventMap = [-1, "", "init", -1, -1, -1];
 
-false;
 function updateHistoryState(history, getAncestors, state_from_name) {
   if (state_from_name === "nok") {
     return history;
@@ -143,6 +142,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
     },
   ];
+
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
