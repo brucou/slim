@@ -37,15 +37,12 @@
 //   "logCtoD": function (extendedState, eventData, settings){},
 //   "logDtoA": function (extendedState, eventData, settings){},
 // };
-// ----------------
-var nextEventMap = {
-  "n2ღGroup 1": "init",
-  "n2::n0ღB": "",
-  "n2::n2ღGroup 2": "init",
-  "n2::n2::n1ღGroup 3": "init",
-  "n2::n2::n1::n3ღGroup 4": "init",
-  "n2::n2::n1::n3::n3ღD": "",
-};
+// -------Control states---------
+/*
+      {"0":"nok","1":"Aღn1","2":"Group 1ღn2","3":"Bღn2::n0","4":"Group 2ღn2::n2","5":"Group 3ღn2::n2::n1","6":"Bღn2::n2::n1::n0","7":"Cღn2::n2::n1::n2","8":"Group 4ღn2::n2::n1::n3","9":"Aღn2::n2::n1::n3::n0","10":"Bღn2::n2::n1::n3::n1","11":"Cღn2::n2::n1::n3::n2","12":"Dღn2::n2::n1::n3::n3"}
+      */
+// ------------------------------
+var nextEventMap = [-1, -1, "init", "", "init", "init", -1, -1, "init", -1, -1, -1, ""];
 
 false;
 
@@ -56,85 +53,73 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var parentMap = {
-    "n2::n0ღB": "n2ღGroup 1",
-    "n2::n2ღGroup 2": "n2ღGroup 1",
-    "n2::n2::n1ღGroup 3": "n2::n2ღGroup 2",
-    "n2::n2::n1::n0ღB": "n2::n2::n1ღGroup 3",
-    "n2::n2::n1::n2ღC": "n2::n2::n1ღGroup 3",
-    "n2::n2::n1::n3ღGroup 4": "n2::n2::n1ღGroup 3",
-    "n2::n2::n1::n3::n0ღA": "n2::n2::n1::n3ღGroup 4",
-    "n2::n2::n1::n3::n1ღB": "n2::n2::n1::n3ღGroup 4",
-    "n2::n2::n1::n3::n2ღC": "n2::n2::n1::n3ღGroup 4",
-    "n2::n2::n1::n3::n3ღD": "n2::n2::n1::n3ღGroup 4",
-  };
-  var cs = "nok";
+  var parentMap = [null, null, null, 2, 2, 4, 5, 5, 5, 8, 8, 8, 8];
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
 
   function getAncestors(cs) {
     return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
   }
 
-  var eventHandlers = {
-    nok: {
+  var eventHandlers = [
+    {
       init: function (s, ed, stg) {
-        cs = "n1ღA"; // No action, only cs changes!
+        // Transition to Aღn1;
+        cs = 1; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
-    n1ღA: {
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logAtoGroup1"](s, ed, stg);
-        cs = "n2ღGroup 1";
+        // Transition to Group 1ღn2;
+        cs = 2;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    "n2::n0ღB": {
+    {
+      init: function (s, ed, stg) {
+        let computed = actions["logGroup1toGroup2"](s, ed, stg);
+        // Transition to Bღn2::n0;
+        cs = 3;
+        es = updateState(s, computed.updates);
+
+        return computed;
+      },
+    },
+    {
       "": function (s, ed, stg) {
-        cs = "n2::n2ღGroup 2"; // No action, only cs changes!
+        // Transition to Group 2ღn2::n2;
+        cs = 4; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
-    "n2ღGroup 1": {
-      init: function (s, ed, stg) {
-        let computed = actions["logGroup1toGroup2"](s, ed, stg);
-        cs = "n2::n0ღB";
-        es = updateState(s, computed.updates);
-
-        return computed;
-      },
-    },
-    "n2::n2ღGroup 2": {
+    {
       init: function (s, ed, stg) {
         let computed = actions["logGroup2toGroup3"](s, ed, stg);
-        cs = "n2::n2::n1ღGroup 3";
+        // Transition to Group 3ღn2::n2::n1;
+        cs = 5;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    "n2::n2::n1::n0ღB": {
-      event1: function (s, ed, stg) {
-        let computed = actions["logGroup3BtoGroup4"](s, ed, stg);
-        cs = "n2::n2::n1::n3ღGroup 4";
-        es = updateState(s, computed.updates);
-
-        return computed;
-      },
-    },
-    "n2::n2::n1ღGroup 3": {
+    {
       init: function (s, ed, stg) {
         let computed = null;
         if (guards["isNumber"](s, ed, stg)) {
           computed = actions["logGroup3toB"](s, ed, stg);
-          cs = "n2::n2::n1::n0ღB";
+          // Transition to "Bღn2::n2::n1::n0";
+          cs = 6;
         } else if (guards["not(isNumber)"](s, ed, stg)) {
           computed = actions["logGroup3toC"](s, ed, stg);
-          cs = "n2::n2::n1::n2ღC";
+          // Transition to "Cღn2::n2::n1::n2";
+          cs = 7;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -143,10 +128,30 @@ function createStateMachine(fsmDefForCompile, stg) {
         return computed;
       },
     },
-    "n2::n2::n1::n3::n0ღA": {
+    {
+      event1: function (s, ed, stg) {
+        let computed = actions["logGroup3BtoGroup4"](s, ed, stg);
+        // Transition to Group 4ღn2::n2::n1::n3;
+        cs = 8;
+        es = updateState(s, computed.updates);
+
+        return computed;
+      },
+    },
+    ,
+    {
+      init: function (s, ed, stg) {
+        // Transition to Aღn2::n2::n1::n3::n0;
+        cs = 9; // No action, only cs changes!
+
+        return { outputs: [], updates: [] };
+      },
+    },
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logAtoB"](s, ed, stg);
-        cs = "n2::n2::n1::n3::n1ღB";
+        // Transition to Bღn2::n2::n1::n3::n1;
+        cs = 10;
         es = updateState(s, computed.updates);
 
         return computed;
@@ -154,36 +159,40 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       event2: function (s, ed, stg) {
         let computed = actions["logAtoC"](s, ed, stg);
-        cs = "n2::n2::n1::n3::n2ღC";
+        // Transition to Cღn2::n2::n1::n3::n2;
+        cs = 11;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    "n2::n2::n1::n3::n1ღB": {
+    {
       event2: function (s, ed, stg) {
         let computed = actions["logBtoD"](s, ed, stg);
-        cs = "n2::n2::n1::n3::n3ღD";
+        // Transition to Dღn2::n2::n1::n3::n3;
+        cs = 12;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    "n2::n2::n1::n3::n2ღC": {
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logCtoD"](s, ed, stg);
-        cs = "n2::n2::n1::n3::n3ღD";
+        // Transition to Dღn2::n2::n1::n3::n3;
+        cs = 12;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    "n2::n2::n1::n3::n3ღD": {
+    {
       "": function (s, ed, stg) {
         let computed = null;
         if (guards["shouldReturnToA"](s, ed, stg)) {
           computed = actions["logDtoA"](s, ed, stg);
-          cs = "n2::n2::n1::n3::n0ღA";
+          // Transition to "Aღn2::n2::n1::n3::n0";
+          cs = 9;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -192,22 +201,16 @@ function createStateMachine(fsmDefForCompile, stg) {
         return computed;
       },
     },
-    "n2::n2::n1::n3ღGroup 4": {
-      init: function (s, ed, stg) {
-        cs = "n2::n2::n1::n3::n0ღA"; // No action, only cs changes!
-
-        return { outputs: [], updates: [] };
-      },
-    },
-  };
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
+    // console.warn('controlStateHandlingEvent', controlStateHandlingEvent);
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
@@ -215,7 +218,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           [null]
-        : nextEventMap[cs] == null
+        : nextEventMap[cs] === -1
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

@@ -10,7 +10,7 @@ OneTransitionLabel ->
 | "/" ActionsClause                                    {% d => ({event: "", guard: [], actions: d[1]}) %}
 | "[" GuardClause "]"                                  {% d => ({event: "", guard: d[1], actions: []}) %}
 
-EventClause -> [^\/\[\]\|]:+                           {% d => d[0].join('') %}
+EventClause -> [^\/\[\]\|,]:+                           {% d => d[0].join('') %}
 GuardClause -> Guard ("," Guard):*                     {% d =>  [d[0]].concat(d[1].map(dd => dd[1]))  %}
 Guard -> [^\[\],]:*                                     {% d => (d[0] || []).join('') %}
 ActionsClause -> Action ("," Action):*                 {% d =>  [d[0]].concat(d[1].map(dd => dd[1]))  %}

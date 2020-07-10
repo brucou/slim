@@ -29,7 +29,11 @@
 //   "decrement counter": function (extendedState, eventData, settings){},
 //   "render some more": function (extendedState, eventData, settings){},
 // };
-// ----------------
+// -------Control states---------
+/*
+      {"0":"nok","1":"idleღn1"}
+      */
+// ------------------------------
 
 function chain(arrFns, actions) {
   return function chain_(s, ed, stg) {
@@ -54,23 +58,26 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var cs = "nok";
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
 
-  var eventHandlers = {
-    nok: {
+  var eventHandlers = [
+    {
       init: function (s, ed, stg) {
-        cs = "n1ღidle"; // No action, only cs changes!
+        // Transition to idleღn1;
+        cs = 1; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
-    n1ღidle: {
+    {
       "click inc": function (s, ed, stg) {
         let computed = null;
         if (["is it", "is it not"].every((p) => guards[p](s, ed, stg))) {
           computed = chain(["increment counter", "render"], actions)(s, ed, stg);
-          cs = "n1ღidle";
+          // Transition to "idleღn1";
+          cs = 1;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -81,19 +88,20 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       "click dec": function (s, ed, stg) {
         let computed = chain(["decrement counter", "render", "render some more"], actions)(s, ed, stg);
-        cs = "n1ღidle";
+        // Transition to idleღn1;
+        cs = 1;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-  };
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 

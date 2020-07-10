@@ -115,7 +115,7 @@ function getYedParentNode(yedFrom) {
 }
 
 function yedState2KinglyState(stateYed2KinglyMap, yedState) {
-  return [yedState, stateYed2KinglyMap[yedState]].join(SEP);
+  return [stateYed2KinglyMap[yedState], yedState].join(SEP);
 }
 
 function computeKinglyDestinationState(stateYed2KinglyMap, yedTo) {
@@ -258,16 +258,21 @@ function checkKinglyContracts(states, events, transitions) {
 const f = (a, b) => [].concat(...a.map(d => b.map(e => [].concat(d, e))));
 const cartesian = (a, b, ...c) => (b ? cartesian(f(a, b), ...c) : a);
 
-function resolve(to) {
+function resolve(to, stateIndexList) {
   const type = typeof to === 'object' ? Object.keys(to)[0] : null;
-  return type ? `hs[${JSON.stringify(type)}][${JSON.stringify(to[type])}]` : JSON.stringify(to);
+  return type ? `hs[${JSON.stringify(type)}][${JSON.stringify(stateIndexList[to[type]])}]` : JSON.stringify(stateIndexList[to]);
+}
+
+function formatControlState(to) {
+  const type = typeof to === 'object' ? Object.keys(to)[0] : null;
+  return type ? `${JSON.stringify(type)} history state for ${JSON.stringify(to[type])}` : JSON.stringify(to);
 }
 
 function trimInside(str) {
   return str.replace(/\n/gm, ' ').replace(/\r/gm, ' ').replace(/\s+/g, ' ');
 }
 
-function computeParentMapFromHistoryMaps(historyMaps) {
+function computeParentMapFromHistoryMaps(historyMaps, stateIndexList, stateListWithNok) {
   const { stateList, stateAncestors } = historyMaps;
   // Example of stateAncestors
   // var stateAncestors = {
@@ -279,19 +284,15 @@ function computeParentMapFromHistoryMaps(historyMaps) {
   //   "n2::n5::n5ღcan (un)follow": ["n2::n5ღArticle route", "n2ღApplication core"],
   // };
   const css = Object.keys(stateAncestors);
-  if (css.length === 0) return {};
-  else {
-    // First add the parents that we already have identified in the stateAncestors map
-    let parentMap = css.reduce((acc, cs) => {
-      const ancestors = stateAncestors[cs];
-      acc[cs] = ancestors[0];
-      return acc;
-    }, {});
-    return parentMap;
-  }
+  // mapping cs index to cs parent index
+  const parentMap = stateListWithNok.map(cs => {
+    return stateIndexList[stateAncestors[cs] && stateAncestors[cs][0] || -1]
+  })
+    // css.map(cs => stateIndexList[stateAncestors[cs][0]]);
+  return parentMap;
 };
 
-function getCommentsHeader(transitionsWithoutGuardsActions) {
+function getCommentsHeader(transitionsWithoutGuardsActions, stateListWithNok) {
   // Stringify the transitions without guards and actions (we just have the names of such)
   // to hold the guards and actions
   let predicateList = new Set();
@@ -346,7 +347,11 @@ function getCommentsHeader(transitionsWithoutGuardsActions) {
     .map(action => `\n//   "${action}": function (extendedState, eventData, settings){},`)
     .join('')}
       // };
-      // ----------------
+      // -------Control states---------
+      /*
+      ${JSON.stringify(stateListWithNok.reduce((acc, cs, i) => (acc[i] = cs, acc), {}))}
+      */
+      // ------------------------------
       `.trim();
 }
 
@@ -354,6 +359,18 @@ const frontHeader = `
 // Generated automatically by Kingly, version 0.7
 // http://github.com/brucou/Kingly
 `.trim();
+
+function isTransitionWithoutGuard(guards){
+  return guards.length === 1 && guards[0].predicate.length === 0
+}
+
+function getIndexedHistoryStates(initialHistoryStateKingly, stateListWithNok){
+  return Object.keys(initialHistoryStateKingly).reduce( (acc, historyType) => {
+    acc[historyType] = stateListWithNok.map(cs => -1)
+    return acc
+  },{})
+}
+
 
 module.exports = {
   T,
@@ -385,5 +402,8 @@ module.exports = {
   computeParentMapFromHistoryMaps,
   getCommentsHeader,
   frontHeader,
+  isTransitionWithoutGuard,
+  getIndexedHistoryStates,
+  formatControlState,
 };
 

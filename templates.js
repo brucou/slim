@@ -1,4 +1,4 @@
-const { resolve } = require('./helpers');
+const { resolve, formatControlState } = require('./helpers');
 const { INIT_STATE, INIT_EVENT, DEEP, SHALLOW, ACTION_IDENTITY } = require('kingly');
 
 const implDoStr = `
@@ -44,7 +44,7 @@ function updateHistoryState(history, getAncestors, state_from_name) {
 `.trim() || ``,
   ``]).join('\n');
 
-const transitionWithoutGuard = (action, to, usesHistoryStates) => {
+const transitionWithoutGuard = (action, to, usesHistoryStates, stateIndexList) => {
   // We remove the actions with empty names
   // Those means don't do anything
   const actionNames = action.map(a => a.slice(3, -3)).filter(Boolean);
@@ -61,15 +61,20 @@ const transitionWithoutGuard = (action, to, usesHistoryStates) => {
     computedStr = `let computed = chain(${JSON.stringify(actionNames)}, actions)(s, ed, stg);`;
   }
 
+  const toIndex = resolve(to, stateIndexList);
+  // console.warn(`toIndex `, stateIndexList, to, resolve(to), toIndex)
+
   return [
     `function (s, ed, stg){`,
     isActionIdentity
       ? `
-        cs = ${resolve(to)}; // No action, only cs changes!
+        // Transition to ${to};
+        cs = ${toIndex}; // No action, only cs changes!
         `.trim()
       : `
         ${computedStr}
-        cs = ${resolve(to)};
+        // Transition to ${to};
+        cs = ${toIndex};
         es = updateState(s, computed.updates);
       `.trim(),
     usesHistoryStates && `hs = updateHistoryState(hs, getAncestors, cs); \n` || ``,
@@ -79,7 +84,7 @@ const transitionWithoutGuard = (action, to, usesHistoryStates) => {
 };
 
 
-function transitionWithGuards(guards, usesHistoryStates) {
+function transitionWithGuards(guards, usesHistoryStates, stateIndexList) {
   let predicateStr = "";
   let actionStr  = "";
   return [
@@ -110,7 +115,10 @@ function transitionWithGuards(guards, usesHistoryStates) {
         actionStr = `computed = chain(${JSON.stringify(actionList)}, actions)(s, ed, stg);`
       }
 
-        return `${index ? 'else if' : 'if'} (${predicateStr}) {${actionStr} cs = ${resolve(to)};}`;
+        return `${index ? 'else if' : 'if'} (${predicateStr}) {
+        ${actionStr}
+                // Transition to ${formatControlState(to)};
+        cs = ${resolve(to, stateIndexList)};}`;
     }).join('\n'),
     `if (computed !== null) {
                       es = updateState(s, computed.updates);`,
@@ -137,10 +145,11 @@ ${isGraphWithoutCompoundStates(stateAncestors)
   var controlStateHandlingEvent = [cs].concat(getAncestors(cs)||[]).find(function(controlState){
     return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
   });
+  // console.warn('controlStateHandlingEvent', controlStateHandlingEvent);
 `.trim()
   }   
 
-  if (controlStateHandlingEvent) {
+  if (controlStateHandlingEvent != null) {
     // Run the handler
     var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
@@ -149,7 +158,7 @@ ${isGraphWithoutCompoundStates(stateAncestors)
     return computed === null
     // If transition, but no guards fulfilled => null, else 
      ? [null]
-     : nextEventMap[cs] == null
+     : nextEventMap[cs] === -1
        ? computed.outputs
     // Run automatic transition if any
        : computed.outputs.concat(process({[nextEventMap[cs]]: eventData}))

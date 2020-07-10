@@ -27,7 +27,11 @@
 //   "logNumber": function (extendedState, eventData, settings){},
 //   "logOther": function (extendedState, eventData, settings){},
 // };
-// ----------------
+// -------Control states---------
+/*
+      {"0":"nok","1":"Numberღn0","2":"Otherღn2","3":"Doneღn3"}
+      */
+// ------------------------------
 
 false;
 
@@ -38,19 +42,22 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var cs = "nok";
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
 
-  var eventHandlers = {
-    nok: {
+  var eventHandlers = [
+    {
       init: function (s, ed, stg) {
         let computed = null;
         if (guards["isNumber"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
-          cs = "n0ღNumber";
+          // Transition to "Numberღn0";
+          cs = 1;
         } else if (guards["not(isNumber)"](s, ed, stg)) {
           computed = { outputs: [], updates: [] };
-          cs = "n2ღOther";
+          // Transition to "Otherღn2";
+          cs = 2;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -59,31 +66,33 @@ function createStateMachine(fsmDefForCompile, stg) {
         return computed;
       },
     },
-    n0ღNumber: {
+    {
       continue: function (s, ed, stg) {
         let computed = actions["logNumber"](s, ed, stg);
-        cs = "n3ღDone";
+        // Transition to Doneღn3;
+        cs = 3;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    n2ღOther: {
+    {
       continue: function (s, ed, stg) {
         let computed = actions["logOther"](s, ed, stg);
-        cs = "n3ღDone";
+        // Transition to Doneღn3;
+        cs = 3;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-  };
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 

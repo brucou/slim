@@ -29,8 +29,12 @@
 //   "logCtoD": function (extendedState, eventData, settings){},
 //   "logDtoA": function (extendedState, eventData, settings){},
 // };
-// ----------------
-var nextEventMap = { n4ღD: "" };
+// -------Control states---------
+/*
+      {"0":"nok","1":"Aღn1","2":"Bღn2","3":"Cღn3","4":"Dღn4"}
+      */
+// ------------------------------
+var nextEventMap = [-1, -1, -1, -1, ""];
 
 false;
 
@@ -41,21 +45,24 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var cs = "nok";
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
 
-  var eventHandlers = {
-    nok: {
+  var eventHandlers = [
+    {
       init: function (s, ed, stg) {
-        cs = "n1ღA"; // No action, only cs changes!
+        // Transition to Aღn1;
+        cs = 1; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
-    n1ღA: {
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logAtoB"](s, ed, stg);
-        cs = "n2ღB";
+        // Transition to Bღn2;
+        cs = 2;
         es = updateState(s, computed.updates);
 
         return computed;
@@ -63,36 +70,40 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       event2: function (s, ed, stg) {
         let computed = actions["logAtoC"](s, ed, stg);
-        cs = "n3ღC";
+        // Transition to Cღn3;
+        cs = 3;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    n2ღB: {
+    {
       event2: function (s, ed, stg) {
         let computed = actions["logBtoD"](s, ed, stg);
-        cs = "n4ღD";
+        // Transition to Dღn4;
+        cs = 4;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    n3ღC: {
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logCtoD"](s, ed, stg);
-        cs = "n4ღD";
+        // Transition to Dღn4;
+        cs = 4;
         es = updateState(s, computed.updates);
 
         return computed;
       },
     },
-    n4ღD: {
+    {
       "": function (s, ed, stg) {
         let computed = null;
         if (guards["shouldReturnToA"](s, ed, stg)) {
           computed = actions["logDtoA"](s, ed, stg);
-          cs = "n1ღA";
+          // Transition to "Aღn1";
+          cs = 1;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -101,13 +112,13 @@ function createStateMachine(fsmDefForCompile, stg) {
         return computed;
       },
     },
-  };
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = (eventHandlers[cs] || {})[eventLabel] && cs;
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
@@ -115,7 +126,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           [null]
-        : nextEventMap[cs] == null
+        : nextEventMap[cs] === -1
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

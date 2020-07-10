@@ -6,7 +6,7 @@ module.exports = function slim(argv) {
   const fs = require('fs');
   const { Command } = require('commander');
   const { computeTransitionsAndStatesFromXmlString } = require('./conversion');
-  const { checkKinglyContracts, resolve, computeParentMapFromHistoryMaps, getCommentsHeader, frontHeader } = require('./helpers');
+  const { checkKinglyContracts, isTransitionWithoutGuard, getIndexedHistoryStates, computeParentMapFromHistoryMaps, getCommentsHeader, frontHeader } = require('./helpers');
   const program = new Command();
   const prettyFormat = require('pretty-format');
 
@@ -68,9 +68,12 @@ module.exports = function slim(argv) {
       // So we read the file, we have our transitions, states and events for a valid graph,
       // let's compile
       const historyMaps = computeHistoryMaps(states);
-      const initialHistoryState = initHistoryDataStructure(historyMaps.stateList);
+      const stateListWithNok = [INIT_STATE].concat(historyMaps.stateList);
+      const stateIndexList = stateListWithNok.reduce((acc, cs, i) => (acc[cs]= i, acc), {});
+      const initialHistoryStateKingly = initHistoryDataStructure(historyMaps.stateList);
+      const initialHistoryState =  getIndexedHistoryStates(initialHistoryStateKingly, stateListWithNok);
       const stateAncestors = historyMaps.stateAncestors;
-      const parentMap = computeParentMapFromHistoryMaps(historyMaps);
+      const parentMap = computeParentMapFromHistoryMaps(historyMaps, stateIndexList, stateListWithNok);
       const transitions = transitionsWithoutGuardsActions;
       // console.warn(`transitions `, prettyFormat(transitions ))
       const transitionsPerOrigin = transitions.reduce((acc, transition) => {
@@ -94,15 +97,16 @@ module.exports = function slim(argv) {
         }
         return acc;
       }, {});
-      const nextEventMap = historyMaps.stateList.reduce((acc, state) => {
-        if (isStateWithEventlessTransition[state]) {
-          acc[state] = '';
+      const nextEventMap = stateListWithNok.map(cs => {
+        if (isStateWithEventlessTransition[cs]) {
+          return '';
         }
-        else if (isCompoundControlState[state]) {
-          acc[state] = INIT_EVENT;
+        else if (isCompoundControlState[cs]) {
+          return INIT_EVENT;
         }
-        return acc;
-      }, {});
+        return -1;
+
+      });
       const usesHistoryStates = Object.keys(isCompoundControlState).length > 0 && transitions.some(transition => {
         if (transition.guards) return transition.guards.some(({ to }) => typeof to === 'object');
         else return typeof transition.to === 'object';
@@ -112,7 +116,7 @@ module.exports = function slim(argv) {
       // hence we have an hidden automatic transition here
       //  NOTE: while being false does not mean that there is an automatic event
       // being false means that there is none such event
-      const hasAutomaticEvents = usesHistoryStates || Object.keys(nextEventMap).some(state => nextEventMap[state] != null);
+      const hasAutomaticEvents = usesHistoryStates || Object.keys(nextEventMap).some(state => nextEventMap[state] === '' || nextEventMap[state] === INIT_EVENT);
       const hasChainedActions = transitions.some(transition => {
         const guards = transition.guards;
         return guards.some(g => g.action.filter(Boolean).length > 1)
@@ -120,7 +124,7 @@ module.exports = function slim(argv) {
 
       // Start the compiled file with the shape of actions and guards
       // to pass to the `createStateMachine` factory function
-      const commentsHeader = getCommentsHeader(transitionsWithoutGuardsActions);
+      const commentsHeader = getCommentsHeader(transitionsWithoutGuardsActions, stateListWithNok);
 
       const compiledContents = [
         frontHeader,
@@ -139,13 +143,15 @@ module.exports = function slim(argv) {
             // Initialize machine state,
             var parentMap = ${JSON.stringify(parentMap)};
             `.trim(),
-        `var cs = ${JSON.stringify(INIT_STATE)};`,
+        // We use the conrol state index, i.e. a number, not the full string to save bytes
+        `// Start with pre-initial state ${JSON.stringify(INIT_STATE)}`,
+        `var cs = ${JSON.stringify(stateIndexList[INIT_STATE])};`,
         `var es = initialExtendedState;`,
         usesHistoryStates ? `var hs = ${JSON.stringify(initialHistoryState)};\n` : ``,
         Object.keys(stateAncestors).length !== 0 ? `
             function getAncestors(cs) {return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : []} ;
             ` : '',
-        eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates }),
+        eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates, stateListWithNok, stateIndexList}),
         // Now the main function
         mainLoop({nextEventMap, hasAutomaticEvents, stateAncestors}),
         `}`,
@@ -164,6 +170,7 @@ module.exports = function slim(argv) {
       // Write the esm output file
       const esmContents = [compiledContents, esmExports].join('\n\n');
       const prettyEsmFileContents = prettier.format(esmContents, { semi: true, parser: 'babel', printWidth: 120 });
+      // const prettyEsmFileContents = esmContents;
       fs.writeFileSync(`${file}.fsm.compiled.js`, prettyEsmFileContents);
       // Write the cjs output file
       const cjsContents = [compiledContents, cjsExports, ''].join('\n\n');
@@ -172,42 +179,33 @@ module.exports = function slim(argv) {
     });
   }
 
-  function eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates }) {
-    return [
-      `var eventHandlers = {`,
-      Object.keys(transitionsPerOrigin).reduce((str, from) => {
-        return str + [
-          // From
-          `"${from}": {`,
-          // Event
-          Object.keys(transitionsPerOrigin[from]).reduce((str, event) => {
-            const stateAncestorsWithHandler = stateAncestors[from] && stateAncestors[from].filter(ancestor => transitions.some(({ from, e }) => from === ancestor && event === e));
-            const transition = transitionsPerOrigin[from][event];
-            const { guards } = transition;
-            // console.warn(`transition`, transition)
+  function eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates, stateListWithNok, stateIndexList }) {
+    const eventHandlers = stateListWithNok.map(cs => {
+      const transitionRecord = transitionsPerOrigin[cs];
+      if (transitionRecord){
+        const events = Object.keys(transitionRecord);
+        return `{` + events.reduce((str, event) => {
+          const transition = transitionsPerOrigin[cs][event];
+          const { guards } = transition;
+          // console.warn(`transition`, transition)
 
-            // TODO: case where predicate in guard record can be empty array => use T
-            return str + `
+          return str + `
             ${JSON.stringify(event)}:  ${
-              isTransitionWithoutGuard(guards)
-                ? transitionWithoutGuard(guards[0].action, guards[0].to, usesHistoryStates)
-                :  transitionWithGuards(guards, usesHistoryStates)
+            isTransitionWithoutGuard(guards)
+              ? transitionWithoutGuard(guards[0].action, guards[0].to, usesHistoryStates, stateIndexList)
+              :  transitionWithGuards(guards, usesHistoryStates, stateIndexList)
             }
                 `
-          }, ''),
-          // End from
-          `},`,
-        ].join('\n');
-      }, ''),
-      // End event handler : {
-      `}`,
-    ].join('\n').trim();
+        }, '') + `}`
+      }
+      else {return null}
+    })
+
+      return       `var eventHandlers = [${eventHandlers.join()}]
+      `
   }
 
 // TODO: cf. TODO.md
 };
 
-function isTransitionWithoutGuard(guards){
-  return guards.length === 1 && guards[0].predicate.length === 0
-}
 

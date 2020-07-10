@@ -67,7 +67,7 @@ const getLabel = (graphObj) => {
 const getChildren = graphObj => (graphObj.graph ? graphObj.graph.node : []);
 const constructStateHierarchy = (label, children) => {
   const [yedLabel, stateLabel] = label;
-  const _label = label.join(SEP);
+  const _label = [stateLabel, yedLabel].join(SEP);
   const isAtomicState = children => children && children.length === 0;
   const isHistoryState = stateLabel => (stateLabel === "H" || stateLabel === "H*");
 
@@ -110,7 +110,7 @@ function parseYedLabel(_yedEdgeLabel) {
   const yedEdgeLabel = _yedEdgeLabel && trimInside(_yedEdgeLabel).trim() || "";
   try{parser.feed(yedEdgeLabel);} catch(e) {
     console.error(e);
-    throw new Error(`parseYedLabel > parser.feed: String "${yedEdgeLabel}" fails parsing. \nPlease review the syntax rules for edge labels. \ncf. ttps://brucou.github.io/documentation/v1/tooling/graph_editing.html#Rules`)
+    throw new Error(`parseYedLabel > parser.feed: String "${yedEdgeLabel}" fails parsing. \nPlease review the syntax rules for edge labels. \ncf. https://brucou.github.io/documentation/v1/tooling/graph_editing.html#Rules`)
   }
 
   // Two cases from the grammar:
@@ -286,7 +286,7 @@ function computeKinglyTransitionsFactory(stateYed2KinglyMap, edges, injected) {
           //   Case: non-top-level, i.e. compound state's init transition
           // -> there is a parent to the origin node, that's the compound node we want
           const fromParent = getYedParentNode(yedFrom);
-          from = [fromParent, stateYed2KinglyMap[fromParent]].join(SEP);
+          from = [stateYed2KinglyMap[fromParent], fromParent].join(SEP);
           event = INIT_EVENT;
         }
       }

@@ -43,3 +43,10 @@ DOC: ADR!
       - only change of index (consider it not a change but a shuffle) between guards, or transition index
 
 - make warning if same action several time?
+
+// getAncestors
+// cs init 0
+// eevent handlers is array
+// nextEventMap is array, -1 instead of null
+// be careful with controlStateHandlingEvent = 0, make sure find does not reurn -
+// replace .find (IE does not have it) by a custom function maybe behind a flag -IE

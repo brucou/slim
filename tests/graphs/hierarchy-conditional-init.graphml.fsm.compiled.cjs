@@ -27,8 +27,12 @@
 //   "logAtoB": function (extendedState, eventData, settings){},
 //   "logAtoC": function (extendedState, eventData, settings){},
 // };
-// ----------------
-var nextEventMap = { "n2ღGroup 1": "init" };
+// -------Control states---------
+/*
+      {"0":"nok","1":"Aღn1","2":"Group 1ღn2","3":"Bღn2::n0","4":"Cღn2::n2"}
+      */
+// ------------------------------
+var nextEventMap = [-1, -1, "init", -1, -1];
 
 false;
 
@@ -39,31 +43,43 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var parentMap = { "n2::n0ღB": "n2ღGroup 1", "n2::n2ღC": "n2ღGroup 1" };
-  var cs = "nok";
+  var parentMap = [null, null, null, 2, 2];
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
 
   function getAncestors(cs) {
     return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
   }
 
-  var eventHandlers = {
-    nok: {
+  var eventHandlers = [
+    {
       init: function (s, ed, stg) {
-        cs = "n1ღA"; // No action, only cs changes!
+        // Transition to Aღn1;
+        cs = 1; // No action, only cs changes!
 
         return { outputs: [], updates: [] };
       },
     },
-    "n2ღGroup 1": {
+    {
+      event1: function (s, ed, stg) {
+        // Transition to Group 1ღn2;
+        cs = 2; // No action, only cs changes!
+
+        return { outputs: [], updates: [] };
+      },
+    },
+    {
       init: function (s, ed, stg) {
         let computed = null;
         if (guards["isNumber"](s, ed, stg)) {
           computed = actions["logAtoB"](s, ed, stg);
-          cs = "n2::n0ღB";
+          // Transition to "Bღn2::n0";
+          cs = 3;
         } else if (guards["not(isNumber)"](s, ed, stg)) {
           computed = actions["logAtoC"](s, ed, stg);
-          cs = "n2::n2ღC";
+          // Transition to "Cღn2::n2";
+          cs = 4;
         }
         if (computed !== null) {
           es = updateState(s, computed.updates);
@@ -72,22 +88,17 @@ function createStateMachine(fsmDefForCompile, stg) {
         return computed;
       },
     },
-    n1ღA: {
-      event1: function (s, ed, stg) {
-        cs = "n2ღGroup 1"; // No action, only cs changes!
-
-        return { outputs: [], updates: [] };
-      },
-    },
-  };
+    ,
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
+    // console.warn('controlStateHandlingEvent', controlStateHandlingEvent);
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
@@ -95,7 +106,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           [null]
-        : nextEventMap[cs] == null
+        : nextEventMap[cs] === -1
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));

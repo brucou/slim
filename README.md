@@ -74,10 +74,20 @@ Some definitions:
  - A history pseudo-state is a node whose label is `H` (shallow history) or `H*` (deep history) with this same capitalization  
  - A compound node is a node which is created in the yEd interface by using the group functionality (*Grouping > Group* or *Ctrl-Alt-G* in version 3.19).  
 
-- `slim` rules:  
+#### `slim` rules:
   - The compiler converts the `.graphml` file using the same algorithm than `yed2Kingly`. As such the same conversion rules that apply: the machine encoded in the `.graphml` file must correspond to a valid Kingly machine.
   - no control state, i.e. no node in the yEd graph can have an `init`-like label if that control state is not an initial transition.
-  - the previous rule applies indentically for control states which are not pseudo-control states. They cannot be labelled a `H` or `H*`. Be careful that `h` will not be considered to be a pseudo control state, but a regular control state.
+  - the previous rule applies also for control states which are not pseudo-control states. They cannot be labelled a `H` or `H*`. Be careful that `h` will not be considered to be a pseudo control state, but a regular control state.
+  - edge labels (which contain the event/guard/action triple under the following syntax `event [guard] / action (comment)`) are parsed with an [EBNF grammar](https://github.com/brucou/slim/blob/master/yedEdgeLabelGrammar.ne). As of June 2020, to avoid having to handle an ambiguous grammar:
+    - `event` cannot have the characters `[`, `]`, `/`, `,` and `|` 
+    - `guard` cannot have the characters `[`, `]`, and `,`
+    - `actions` cannot have the characters `[`, `]`, `/`, `,` `(`, `)`, and `|`
+  - edge labels can encode multiple transitions, provided those transitions encoding are separated by the `|` (pipe) character:
+    - e.g. `| event1 [guard1] / action1 | event2 [guard2] / action2` encodes two transitions triggered respectively by `event1` and `event2`
+  - edge labels also encode composite guards and composite actions. Composite guards and actions are comma-separated actions. `guard1, guard2` encodes a guard which will be satisfied only and only if both `guard1` and `guard2` are satisfied. Similarly, `action1, action2` encode two actions that will be composed to form a single action. The outputs of the composed is the concatenation of the outputs of each action, in the same order
+    - e.g. `event [cond1, cond2] / action1, action2 (comment)`
+
+The rules have been chosen for expressiveness, readability and multi-language support. Events, guards and actions can thus be described with several words if that is more descriptive. Unicode characters are accepted, meaning all languages supported by Unicode are supported by the compiler too. The few existing restrictions are for disambiguity: we do not want the compiler user to not write erroneous labels inadvertently.
 
 # Size of file generated
 There are plenty of graph examples in the [test directory](https://github.com/brucou/slim/tree/master/tests/graphs). 

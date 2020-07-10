@@ -30,8 +30,12 @@
 //   "logGroup1toC": function (extendedState, eventData, settings){},
 //   "logDtoD": function (extendedState, eventData, settings){},
 // };
-// ----------------
-var nextEventMap = { n1ღE: "", "n2ღGroup 1": "init", "n2::n1ღC": "", "n2::n2ღGroup 1": "init" };
+// -------Control states---------
+/*
+      {"0":"nok","1":"INitღn0","2":"Eღn1","3":"Group 1ღn2","4":"Bღn2::n0","5":"Cღn2::n1","6":"Group 1ღn2::n2","7":"Dღn2::n2::n0","8":"Dღn2::n2::n2","9":"Initღn2::n3"}
+      */
+// ------------------------------
+var nextEventMap = [-1, -1, "", "init", -1, "", "init", -1, -1, -1];
 
 false;
 function updateHistoryState(history, getAncestors, state_from_name) {
@@ -58,50 +62,41 @@ function createStateMachine(fsmDefForCompile, stg) {
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
   // Initialize machine state,
-  var parentMap = {
-    "n2::n0ღB": "n2ღGroup 1",
-    "n2::n1ღC": "n2ღGroup 1",
-    "n2::n2ღGroup 1": "n2ღGroup 1",
-    "n2::n2::n0ღD": "n2::n2ღGroup 1",
-    "n2::n2::n2ღD": "n2::n2ღGroup 1",
-    "n2::n3ღInit": "n2ღGroup 1",
-  };
-  var cs = "nok";
+  var parentMap = [null, null, null, null, 3, 3, 3, 6, 6, 3];
+  // Start with pre-initial state "nok"
+  var cs = 0;
   var es = initialExtendedState;
-  var hs = {
-    deep: {
-      n0ღINit: "",
-      n1ღE: "",
-      "n2ღGroup 1": "",
-      "n2::n0ღB": "",
-      "n2::n1ღC": "",
-      "n2::n2ღGroup 1": "",
-      "n2::n2::n0ღD": "",
-      "n2::n2::n2ღD": "",
-      "n2::n3ღInit": "",
-    },
-    shallow: {
-      n0ღINit: "",
-      n1ღE: "",
-      "n2ღGroup 1": "",
-      "n2::n0ღB": "",
-      "n2::n1ღC": "",
-      "n2::n2ღGroup 1": "",
-      "n2::n2::n0ღD": "",
-      "n2::n2::n2ღD": "",
-      "n2::n3ღInit": "",
-    },
-  };
+  var hs = { deep: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1], shallow: [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1] };
 
   function getAncestors(cs) {
     return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : [];
   }
 
-  var eventHandlers = {
-    "n2ღGroup 1": {
+  var eventHandlers = [
+    {
+      init: function (s, ed, stg) {
+        // Transition to Bღn2::n0;
+        cs = 4; // No action, only cs changes!
+        hs = updateHistoryState(hs, getAncestors, cs);
+
+        return { outputs: [], updates: [] };
+      },
+    },
+    ,
+    {
+      "": function (s, ed, stg) {
+        // Transition to [object Object];
+        cs = hs["shallow"][3]; // No action, only cs changes!
+        hs = updateHistoryState(hs, getAncestors, cs);
+
+        return { outputs: [], updates: [] };
+      },
+    },
+    {
       event3: function (s, ed, stg) {
         let computed = actions["logGroup1toH"](s, ed, stg);
-        cs = "n1ღE";
+        // Transition to Eღn1;
+        cs = 2;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
@@ -110,33 +105,19 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       init: function (s, ed, stg) {
         let computed = actions["logGroup1toC"](s, ed, stg);
-        cs = "n2::n1ღC";
+        // Transition to Cღn2::n1;
+        cs = 5;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
-    n1ღE: {
-      "": function (s, ed, stg) {
-        cs = hs["shallow"]["n2ღGroup 1"]; // No action, only cs changes!
-        hs = updateHistoryState(hs, getAncestors, cs);
-
-        return { outputs: [], updates: [] };
-      },
-    },
-    nok: {
-      init: function (s, ed, stg) {
-        cs = "n2::n0ღB"; // No action, only cs changes!
-        hs = updateHistoryState(hs, getAncestors, cs);
-
-        return { outputs: [], updates: [] };
-      },
-    },
-    "n2::n0ღB": {
+    {
       event2: function (s, ed, stg) {
         let computed = actions["logBtoC"](s, ed, stg);
-        cs = "n2::n1ღC";
+        // Transition to Cღn2::n1;
+        cs = 5;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
@@ -145,52 +126,58 @@ function createStateMachine(fsmDefForCompile, stg) {
 
       event1: function (s, ed, stg) {
         let computed = actions["logBtoD"](s, ed, stg);
-        cs = "n2::n2::n2ღD";
+        // Transition to Dღn2::n2::n2;
+        cs = 8;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
-    "n2::n1ღC": {
+    {
       "": function (s, ed, stg) {
         let computed = actions["logCtoD"](s, ed, stg);
-        cs = "n2::n2::n0ღD";
+        // Transition to Dღn2::n2::n0;
+        cs = 7;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
-    "n2::n2ღGroup 1": {
+    {
       init: function (s, ed, stg) {
         let computed = actions["logGroup1toD"](s, ed, stg);
-        cs = "n2::n2::n0ღD";
+        // Transition to Dღn2::n2::n0;
+        cs = 7;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
-    "n2::n2::n2ღD": {
+    ,
+    {
       event1: function (s, ed, stg) {
         let computed = actions["logDtoD"](s, ed, stg);
-        cs = "n2::n2::n0ღD";
+        // Transition to Dღn2::n2::n0;
+        cs = 7;
         es = updateState(s, computed.updates);
         hs = updateHistoryState(hs, getAncestors, cs);
 
         return computed;
       },
     },
-  };
+  ];
   function process(event) {
     var eventLabel = Object.keys(event)[0];
     var eventData = event[eventLabel];
     var controlStateHandlingEvent = [cs].concat(getAncestors(cs) || []).find(function (controlState) {
       return Boolean(eventHandlers[controlState] && eventHandlers[controlState][eventLabel]);
     });
+    // console.warn('controlStateHandlingEvent', controlStateHandlingEvent);
 
-    if (controlStateHandlingEvent) {
+    if (controlStateHandlingEvent != null) {
       // Run the handler
       var computed = eventHandlers[controlStateHandlingEvent][eventLabel](es, eventData, stg);
 
@@ -198,7 +185,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       return computed === null
         ? // If transition, but no guards fulfilled => null, else
           [null]
-        : nextEventMap[cs] == null
+        : nextEventMap[cs] === -1
         ? computed.outputs
         : // Run automatic transition if any
           computed.outputs.concat(process({ [nextEventMap[cs]]: eventData }));
