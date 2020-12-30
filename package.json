@@ -38,7 +38,8 @@
     "conversion.js",
     "helpers.js",
     "properties.js",
-    "templates.js"
+    "templates.js",
+    "yedEdgeLabelGrammar.js"
   ],
   "license": "MIT",
   "keywords": [
