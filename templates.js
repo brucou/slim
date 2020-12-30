@@ -55,10 +55,10 @@ const transitionWithoutGuard = (action, to, usesHistoryStates, stateIndexList) =
     isActionIdentity = true;
   }
   else if (actionNames.length === 1) {
-    computedStr = `let computed = actions["${actionNames[0]}"](s, ed, stg);`;
+    computedStr = `var computed = actions["${actionNames[0]}"](s, ed, stg);`;
   }
   else  {
-    computedStr = `let computed = chain(${JSON.stringify(actionNames)}, actions)(s, ed, stg);`;
+    computedStr = `var computed = chain(${JSON.stringify(actionNames)}, actions)(s, ed, stg);`;
   }
 
   const toIndex = resolve(to, stateIndexList);
@@ -197,5 +197,6 @@ module.exports = {
   esmExports,
   cjsExports,
 };
+
 
 

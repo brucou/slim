@@ -87,7 +87,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
 
       "click dec": function (s, ed, stg) {
-        let computed = chain(["decrement counter", "render", "render some more"], actions)(s, ed, stg);
+        var computed = chain(["decrement counter", "render", "render some more"], actions)(s, ed, stg);
         // Transition to idleღn1;
         cs = 1;
         es = updateState(s, computed.updates);

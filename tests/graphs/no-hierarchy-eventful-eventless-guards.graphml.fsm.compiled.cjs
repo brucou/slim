@@ -84,7 +84,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       "": function (s, ed, stg) {
-        let computed = actions["logTemp1toA"](s, ed, stg);
+        var computed = actions["logTemp1toA"](s, ed, stg);
         // Transition to Aღn1;
         cs = 1;
         es = updateState(s, computed.updates);
@@ -94,7 +94,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       "": function (s, ed, stg) {
-        let computed = actions["logTemp2toA"](s, ed, stg);
+        var computed = actions["logTemp2toA"](s, ed, stg);
         // Transition to Aღn1;
         cs = 1;
         es = updateState(s, computed.updates);

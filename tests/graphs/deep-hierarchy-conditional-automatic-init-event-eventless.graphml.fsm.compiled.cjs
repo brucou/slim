@@ -71,7 +71,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event1: function (s, ed, stg) {
-        let computed = actions["logAtoGroup1"](s, ed, stg);
+        var computed = actions["logAtoGroup1"](s, ed, stg);
         // Transition to Group 1ღn2;
         cs = 2;
         es = updateState(s, computed.updates);
@@ -81,7 +81,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       init: function (s, ed, stg) {
-        let computed = actions["logGroup1toGroup2"](s, ed, stg);
+        var computed = actions["logGroup1toGroup2"](s, ed, stg);
         // Transition to Bღn2::n0;
         cs = 3;
         es = updateState(s, computed.updates);
@@ -99,7 +99,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       init: function (s, ed, stg) {
-        let computed = actions["logGroup2toGroup3"](s, ed, stg);
+        var computed = actions["logGroup2toGroup3"](s, ed, stg);
         // Transition to Group 3ღn2::n2::n1;
         cs = 5;
         es = updateState(s, computed.updates);
@@ -128,7 +128,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event1: function (s, ed, stg) {
-        let computed = actions["logGroup3BtoGroup4"](s, ed, stg);
+        var computed = actions["logGroup3BtoGroup4"](s, ed, stg);
         // Transition to Group 4ღn2::n2::n1::n3;
         cs = 8;
         es = updateState(s, computed.updates);
@@ -147,7 +147,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event1: function (s, ed, stg) {
-        let computed = actions["logAtoB"](s, ed, stg);
+        var computed = actions["logAtoB"](s, ed, stg);
         // Transition to Bღn2::n2::n1::n3::n1;
         cs = 10;
         es = updateState(s, computed.updates);
@@ -156,7 +156,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
 
       event2: function (s, ed, stg) {
-        let computed = actions["logAtoC"](s, ed, stg);
+        var computed = actions["logAtoC"](s, ed, stg);
         // Transition to Cღn2::n2::n1::n3::n2;
         cs = 11;
         es = updateState(s, computed.updates);
@@ -166,7 +166,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event2: function (s, ed, stg) {
-        let computed = actions["logBtoD"](s, ed, stg);
+        var computed = actions["logBtoD"](s, ed, stg);
         // Transition to Dღn2::n2::n1::n3::n3;
         cs = 12;
         es = updateState(s, computed.updates);
@@ -176,7 +176,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event1: function (s, ed, stg) {
-        let computed = actions["logCtoD"](s, ed, stg);
+        var computed = actions["logCtoD"](s, ed, stg);
         // Transition to Dღn2::n2::n1::n3::n3;
         cs = 12;
         es = updateState(s, computed.updates);

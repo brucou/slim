@@ -92,7 +92,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event3: function (s, ed, stg) {
-        let computed = actions["logGroup1toH"](s, ed, stg);
+        var computed = actions["logGroup1toH"](s, ed, stg);
         // Transition to Eღn1;
         cs = 1;
         es = updateState(s, computed.updates);
@@ -102,7 +102,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
 
       init: function (s, ed, stg) {
-        let computed = actions["logGroup1toC"](s, ed, stg);
+        var computed = actions["logGroup1toC"](s, ed, stg);
         // Transition to Cღn2::n1;
         cs = 4;
         es = updateState(s, computed.updates);
@@ -113,7 +113,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       event2: function (s, ed, stg) {
-        let computed = actions["logBtoC"](s, ed, stg);
+        var computed = actions["logBtoC"](s, ed, stg);
         // Transition to Cღn2::n1;
         cs = 4;
         es = updateState(s, computed.updates);
@@ -123,7 +123,7 @@ function createStateMachine(fsmDefForCompile, stg) {
       },
 
       event1: function (s, ed, stg) {
-        let computed = actions["logBtoD"](s, ed, stg);
+        var computed = actions["logBtoD"](s, ed, stg);
         // Transition to Dღn2::n2::n2;
         cs = 7;
         es = updateState(s, computed.updates);
@@ -134,7 +134,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       "": function (s, ed, stg) {
-        let computed = actions["logCtoD"](s, ed, stg);
+        var computed = actions["logCtoD"](s, ed, stg);
         // Transition to Dღn2::n2::n0;
         cs = 6;
         es = updateState(s, computed.updates);
@@ -145,7 +145,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       init: function (s, ed, stg) {
-        let computed = actions["logGroup1toD"](s, ed, stg);
+        var computed = actions["logGroup1toD"](s, ed, stg);
         // Transition to Dღn2::n2::n0;
         cs = 6;
         es = updateState(s, computed.updates);
@@ -157,7 +157,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     ,
     {
       event1: function (s, ed, stg) {
-        let computed = actions["logDtoD"](s, ed, stg);
+        var computed = actions["logDtoD"](s, ed, stg);
         // Transition to Dღn2::n2::n0;
         cs = 6;
         es = updateState(s, computed.updates);

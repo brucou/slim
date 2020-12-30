@@ -113,7 +113,7 @@ The following complex wizard form was [implemented](https://github.com/brucou/cy
 
 ![subscription wizard form modelization](https://github.com/brucou/cycle-state-machine-demo/raw/master/public/assets/images/graphs/sparks%20application%20process%20with%20comeback%20proper%20syntax%20-%20flat%20fsm.png)
 
-An implementation of the [Conduit average-sized application](https://rw-kingly-svelte.bricoi1.now.sh/#/) has ~35 states, ~75 transitions and weighted 2.3KB min.gzipped. We estimated that writing this logic by hand may have shaved 100 (extra code due to compiler) + 200 bytes (extra code due to using a graph editor), which is thus the cost we pay for using state machines and the graph editor (0.3KB).
+An implementation of the [Conduit average-sized application](https://rw-kingly-svelte.bricoi1.now.sh/#/) has ~35 states, ~75 transitions and weighted 2.3KB min.gzipped. We estimated that writing this logic by hand may have shaved 100 (extra code due to compiler) + 400 bytes (extra code due to using a graph editor), which is thus the cost we pay for using state machines and the graph editor (0.5KB).
 
 Those preliminary results are fairly consistent. Assuming 20 bytes per transitions (computed from the previous data points), with a base line of 500 bytes, to reach 5KB (i.e. the size of the core Kingly library) we need a machine with 220 transitions!! Note that this size does not (and cannot) include the actions and guards but does represent the size of the logic encoded in the machine.
 

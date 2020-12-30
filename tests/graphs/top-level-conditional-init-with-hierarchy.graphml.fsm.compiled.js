@@ -80,7 +80,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       continue: function (s, ed, stg) {
-        let computed = actions["logNumber"](s, ed, stg);
+        var computed = actions["logNumber"](s, ed, stg);
         // Transition to Doneღn1::n3;
         cs = 4;
         es = updateState(s, computed.updates);
@@ -90,7 +90,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       continue: function (s, ed, stg) {
-        let computed = actions["logOther"](s, ed, stg);
+        var computed = actions["logOther"](s, ed, stg);
         // Transition to Doneღn1::n3;
         cs = 4;
         es = updateState(s, computed.updates);

@@ -69,9 +69,9 @@ module.exports = function slim(argv) {
       // let's compile
       const historyMaps = computeHistoryMaps(states);
       const stateListWithNok = [INIT_STATE].concat(historyMaps.stateList);
-      const stateIndexList = stateListWithNok.reduce((acc, cs, i) => (acc[cs]= i, acc), {});
+      const stateIndexList = stateListWithNok.reduce((acc, cs, i) => (acc[cs] = i, acc), {});
       const initialHistoryStateKingly = initHistoryDataStructure(historyMaps.stateList);
-      const initialHistoryState =  getIndexedHistoryStates(initialHistoryStateKingly, stateListWithNok);
+      const initialHistoryState = getIndexedHistoryStates(initialHistoryStateKingly, stateListWithNok);
       const stateAncestors = historyMaps.stateAncestors;
       const parentMap = computeParentMapFromHistoryMaps(historyMaps, stateIndexList, stateListWithNok);
       const transitions = transitionsWithoutGuardsActions;
@@ -119,7 +119,7 @@ module.exports = function slim(argv) {
       const hasAutomaticEvents = usesHistoryStates || Object.keys(nextEventMap).some(state => nextEventMap[state] === '' || nextEventMap[state] === INIT_EVENT);
       const hasChainedActions = transitions.some(transition => {
         const guards = transition.guards;
-        return guards.some(g => g.action.filter(Boolean).length > 1)
+        return guards.some(g => g.action.filter(Boolean).length > 1);
       });
 
       // Start the compiled file with the shape of actions and guards
@@ -129,7 +129,7 @@ module.exports = function slim(argv) {
       const compiledContents = [
         frontHeader,
         commentsHeader,
-        templateIntro({usesHistoryStates, hasAutomaticEvents, nextEventMap, hasChainedActions}),
+        templateIntro({ usesHistoryStates, hasAutomaticEvents, nextEventMap, hasChainedActions }),
         `function createStateMachine(fsmDefForCompile, stg) {`,
         `var actions = fsmDefForCompile.actionFactories;`,
         `var guards = fsmDefForCompile.guards;`,
@@ -151,9 +151,16 @@ module.exports = function slim(argv) {
         Object.keys(stateAncestors).length !== 0 ? `
             function getAncestors(cs) {return parentMap[cs] ? [parentMap[cs]].concat(getAncestors(parentMap[cs])) : []} ;
             ` : '',
-        eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates, stateListWithNok, stateIndexList}),
+        eventHandlers({
+          transitions,
+          transitionsPerOrigin,
+          stateAncestors,
+          usesHistoryStates,
+          stateListWithNok,
+          stateIndexList,
+        }),
         // Now the main function
-        mainLoop({nextEventMap, hasAutomaticEvents, stateAncestors}),
+        mainLoop({ nextEventMap, hasAutomaticEvents, stateAncestors }),
         `}`,
       ].join('\n ').trim();
 
@@ -182,27 +189,31 @@ module.exports = function slim(argv) {
   function eventHandlers({ transitions, transitionsPerOrigin, stateAncestors, usesHistoryStates, stateListWithNok, stateIndexList }) {
     const eventHandlers = stateListWithNok.map(cs => {
       const transitionRecord = transitionsPerOrigin[cs];
-      if (transitionRecord){
+      if (transitionRecord) {
         const events = Object.keys(transitionRecord);
-        return `{` + events.reduce((str, event) => {
-          const transition = transitionsPerOrigin[cs][event];
-          const { guards } = transition;
-          // console.warn(`transition`, transition)
+        return `{` +
+          events.reduce((str, event) => {
+            const transition = transitionsPerOrigin[cs][event];
+            const { guards } = transition;
+            // console.warn(`transition`, transition)
 
-          return str + `
+            return str + `
             ${JSON.stringify(event)}:  ${
-            isTransitionWithoutGuard(guards)
-              ? transitionWithoutGuard(guards[0].action, guards[0].to, usesHistoryStates, stateIndexList)
-              :  transitionWithGuards(guards, usesHistoryStates, stateIndexList)
-            }
-                `
-        }, '') + `}`
+              isTransitionWithoutGuard(guards)
+                ? transitionWithoutGuard(guards[0].action, guards[0].to, usesHistoryStates, stateIndexList)
+                : transitionWithGuards(guards, usesHistoryStates, stateIndexList)
+              }
+          `;
+          }, '') +
+          `}`;
       }
-      else {return null}
-    })
+      else {
+        return null;
+      }
+    });
 
-      return       `var eventHandlers = [${eventHandlers.join()}]
-      `
+    return `var eventHandlers = [${eventHandlers.join()}]
+      `;
   }
 
 // TODO: cf. TODO.md

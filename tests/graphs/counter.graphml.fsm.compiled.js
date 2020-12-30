@@ -49,6 +49,7 @@ function chain(arrFns, actions) {
 
 function createStateMachine(fsmDefForCompile, stg) {
   var actions = fsmDefForCompile.actionFactories;
+  var guards = fsmDefForCompile.guards;
   var updateState = fsmDefForCompile.updateState;
   var initialExtendedState = fsmDefForCompile.initialExtendedState;
 
@@ -68,7 +69,7 @@ function createStateMachine(fsmDefForCompile, stg) {
     },
     {
       click: function (s, ed, stg) {
-        let computed = chain(["increment counter", "render"], actions)(s, ed, stg);
+        var computed = chain(["increment counter", "render"], actions)(s, ed, stg);
         // Transition to idleღn1;
         cs = 1;
         es = updateState(s, computed.updates);
