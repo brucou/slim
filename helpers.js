@@ -356,7 +356,7 @@ function getCommentsHeader(transitionsWithoutGuardsActions, stateListWithNok) {
 }
 
 const frontHeader = `
-// Generated automatically by Kingly, version 0.7
+// Generated automatically by Kingly, version 0.29
 // http://github.com/brucou/Kingly
 `.trim();
 
